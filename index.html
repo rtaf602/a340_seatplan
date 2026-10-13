@@ -80,6 +80,9 @@ th i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:
 .seat[data-s="2"] .s::after{content:"×";margin-left:1px}
 .seat[data-note] .s{box-shadow:inset 0 -4px 0 var(--ink)}
 .cclabel{position:absolute;left:calc(100% + 8px);bottom:0;height:38px;display:flex;align-items:center;white-space:nowrap;font-size:12px;font-weight:600;color:var(--muted)}
+/* room frame drawn around the Commander Center seat and its label; absolute so the seat stays in the 1A column */
+.cclabel.room::before{content:'';position:absolute;left:calc(-1 * (var(--sw) + 8px + 14px));right:-14px;top:-23px;bottom:-12px;border:2px solid var(--muted);border-radius:8px;pointer-events:none}
+.zone .rows:has(.cclabel.room){padding-block:14px}
 .grp{display:flex;align-items:flex-end;justify-content:center;gap:var(--sg);flex:none;position:relative}
 .ovhrow{align-items:center;height:22px;margin-block:2px}
 .ovhrow .rowno{padding:0}
@@ -276,9 +279,9 @@ var M_LABEL=['Monitor ใช้งานได้','Monitor เสื่อม�
 var COL=['var(--ok)','var(--warn)','var(--bad)'];
 function rows(nums,layout,mon){return nums.map(function(n){return {n:n,g:layout,mon:mon}})}
 var ZONES=[
- {key:'CC',name:'COMMANDER CENTER',hide:true},
- {key:'A',name:'FIRST CLASS',title:'First Class & Meeting Area (8 Seats)',tag:'ZONE A',
-  items:[{cc:true}].concat(rows([1,2],['A','','EF','','K'],true))},
+ {key:'CC',name:'MISSION COMMANDER',title:'Mission Commander (1 Seat)',tag:'ZONE MC',items:[{cc:true}]},
+ {key:'A',name:'FIRST CLASS',title:'First Class (8 Seats)',tag:'ZONE A',
+  items:rows([1,2],['A','','EF','','K'],true)},
  {key:'B',name:'BUSINESS CLASS',title:'Business Class Area (30 Seats)',tag:'ZONE B',
   items:rows([11,12,14,15,16],['AB','EF','JK'],true)},
  {key:'C',name:'PREMIUM ECONOMY',title:'Premium Economy Class Area (77 Seats)',tag:'ZONE C',
@@ -312,7 +315,7 @@ function build(){
           if(gi)r.appendChild(el('div','aisle'));
           if(grp==='')return;
           var g=el('div','grp');
-          if(gi===0){g.appendChild(seatBtn('CC','CC',true,'cc'));g.appendChild(el('span','cclabel','Commander Center'))}
+          if(gi===0){g.appendChild(seatBtn('CC','CC',true,'cc'));g.appendChild(el('span','cclabel room','Commander Center'))}
           else grp.split('').forEach(function(){g.appendChild(el('div','gap'))});
           r.appendChild(g);
         });
