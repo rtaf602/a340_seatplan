@@ -246,10 +246,10 @@ dialog.wide[open]{display:flex;flex-direction:column}
 </dialog>
 
 <dialog id="pinDlg" class="small">
-  <h3>ใส่รหัสสำหรับ SAVE</h3>
-  <p class="sub">ระบบนี้ตั้งรหัสไว้ ขอรหัสจาก Admin แล้วใส่ครั้งเดียว เครื่องนี้จะจำไว้</p>
+  <h3>ใส่รหัสก่อน SAVE</h3>
+  <p class="sub" id="pinMsg">ใส่รหัสเพื่อยืนยันการบันทึก</p>
   <input id="pinIn" type="password" autocomplete="off" placeholder="รหัส">
-  <div class="acts"><button class="btn" id="pinNo" type="button">ยกเลิก</button><button class="btn pri" id="pinYes" type="button">ตกลงแล้ว SAVE</button></div>
+  <div class="acts"><button class="btn" id="pinNo" type="button">ยกเลิก</button><button class="btn pri" id="pinYes" type="button">SAVE</button></div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -275,11 +275,10 @@ var ZONES=[
 var ITEMS={}; // id -> {zone, seat:bool, mon:bool, label}
 var CFG=window.SEATPLAN_CONFIG||{}, API=String(CFG.API_URL||'').trim();
 var db=null, canWrite=true, cur=null, pick={s:0,m:0}, resetEnabled=false;
-var PIN_KEY='seat-a340-pin';
-function getPin(){try{return localStorage.getItem(PIN_KEY)||''}catch(e){return ''}}
-function setPin(p){try{localStorage.setItem(PIN_KEY,p)}catch(e){}}
+var pinRequired=null; /* from the server; the PIN is asked on every SAVE and never stored */
+try{localStorage.removeItem('seat-a340-pin')}catch(e){}
 function apiGet(){return fetch(API+(API.indexOf('?')<0?'?':'&')+'action=load&t='+Date.now()).then(function(r){return r.json()})}
-function apiPost(body){body.pin=getPin();return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json()})}
+function apiPost(body){return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json()})}
 
 function reg(id,zone,seat,mon,label){ITEMS[id]={zone:zone,seat:seat,mon:mon,label:label}}
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
@@ -464,23 +463,36 @@ function doSave(){
   if(saving)return Promise.resolve(false);var ids=pendingIds();if(!ids.length){toast('ไม่มีรายการที่ต้อง SAVE');return Promise.resolve(true)}
   if(!API){toast('ยังไม่ได้ตั้งค่า API_URL ใน config.js จึง SAVE ไม่ได้',true);return Promise.resolve(false)}
   var by=who.value.trim();if(!by){toast('กรุณาใส่ชื่อผู้ตรวจก่อน SAVE',true);who.focus();return Promise.resolve(false)}
-  saving=true;$('bSave').disabled=true;$('bSave').textContent='กำลัง SAVE…';
-  var changes=ids.map(function(id){var d=norm(draft[id]);return {id:id,s:d.s,m:d.m,note:d.note}});
-  return apiPost({action:'save',by:by,changes:changes}).then(function(res){
-    if(!res||!res.ok){
-      if(res&&res.error==='pin'){askPin();return false}
-      if(res&&res.error==='no_name'){toast('กรุณาใส่ชื่อผู้ตรวจก่อน SAVE',true);return false}
-      toast('SAVE ไม่สำเร็จ'+(res&&res.message?' ('+res.message+')':'')+' ลองกด SAVE อีกครั้ง',true);return false;
-    }
-    changes.forEach(function(c){saved[c.id]={s:c.s,m:c.m,note:c.note,by:by,at:res.at};delete draft[c.id]});
-    persistDraft();lastSave=res.lastSave||{by:by,at:res.at};
-    toast('SAVE ลง Google Sheet เรียบร้อย '+changes.length+' รายการ');return true;
-  },function(){toast('ติดต่อ Google Sheet ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วกด SAVE อีกครั้ง',true);return false})
-  .then(function(ok){saving=false;render();if(ok)load();return ok});
+  var pinStep=pinRequired===false?Promise.resolve(''):askPin(ids.length);
+  return pinStep.then(function(pin){
+    if(pin===null)return false;
+    saving=true;$('bSave').disabled=true;$('bSave').textContent='กำลัง SAVE…';
+    var changes=ids.map(function(id){var d=norm(draft[id]);return {id:id,s:d.s,m:d.m,note:d.note}});
+    return apiPost({action:'save',by:by,pin:pin,changes:changes}).then(function(res){
+      if(!res||!res.ok){
+        if(res&&res.error==='pin'){pinRequired=true;toast(pin?'รหัสไม่ถูกต้อง กด SAVE แล้วใส่รหัสอีกครั้ง':'ระบบนี้ต้องใส่รหัส กด SAVE อีกครั้ง',true);return false}
+        if(res&&res.error==='no_name'){toast('กรุณาใส่ชื่อผู้ตรวจก่อน SAVE',true);return false}
+        toast('SAVE ไม่สำเร็จ'+(res&&res.message?' ('+res.message+')':'')+' ลองกด SAVE อีกครั้ง',true);return false;
+      }
+      changes.forEach(function(c){saved[c.id]={s:c.s,m:c.m,note:c.note,by:by,at:res.at};delete draft[c.id]});
+      persistDraft();lastSave=res.lastSave||{by:by,at:res.at};
+      toast('SAVE ลง Google Sheet เรียบร้อย '+changes.length+' รายการ');return true;
+    },function(){toast('ติดต่อ Google Sheet ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วกด SAVE อีกครั้ง',true);return false})
+    .then(function(ok){saving=false;render();if(ok)load();return ok});
+  });
 }
-function askPin(){$('pinIn').value='';showDlg($('pinDlg'));setTimeout(function(){$('pinIn').focus()},50)}
-$('pinNo').addEventListener('click',function(){hideDlg($('pinDlg'))});
-$('pinYes').addEventListener('click',function(){var p=$('pinIn').value.trim();if(!p)return;setPin(p);hideDlg($('pinDlg'));doSave()});
+/* PIN dialog: resolves with the typed PIN, or null when cancelled */
+var pinCb=null;
+function askPin(n){
+  $('pinIn').value='';$('pinMsg').textContent='SAVE '+n+' รายการ ใส่รหัสเพื่อยืนยันการบันทึกลง Google Sheet';
+  showDlg($('pinDlg'));setTimeout(function(){$('pinIn').focus()},50);
+  return new Promise(function(ok){pinCb=ok});
+}
+function closePin(v){hideDlg($('pinDlg'));var f=pinCb;pinCb=null;if(f)f(v)}
+$('pinNo').addEventListener('click',function(){closePin(null)});
+$('pinYes').addEventListener('click',function(){var p=$('pinIn').value.trim();if(!p){$('pinIn').focus();return}closePin(p)});
+$('pinIn').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('pinYes').click()}});
+$('pinDlg').addEventListener('cancel',function(e){e.preventDefault();closePin(null)});
 $('bSave').addEventListener('click',function(){doSave()});
 
 /* ---------- report (PREVIEW / PDF) ---------- */
@@ -648,7 +660,7 @@ function load(){
   return apiGet().then(function(res){
     if(!res||!res.ok)throw new Error(res&&res.message||'load');
     var s2={};Object.keys(res.seats||{}).forEach(function(id){if(ITEMS[id])s2[id]=res.seats[id]});
-    saved=s2;lastSave=res.lastSave||null;resetEnabled=!!res.resetEnabled;$('foot').hidden=!resetEnabled;
+    saved=s2;lastSave=res.lastSave||null;resetEnabled=!!res.resetEnabled;pinRequired=!!res.pinRequired;$('foot').hidden=!resetEnabled;
     Object.keys(draft).forEach(function(id){if(same(draft[id],saved[id]))delete draft[id]});persistDraft();
     render();
     $('sync').innerHTML='ข้อมูลจาก Google Sheet · อัปเดตอัตโนมัติทุก 30 วินาที · ล่าสุด <b>'+fmt(new Date().toISOString())+'</b>';
