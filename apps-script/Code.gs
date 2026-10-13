@@ -14,7 +14,7 @@ const MAP_SHEET = 'ผังที่นั่ง';
 const LOG_SHEET = 'ประวัติการแก้ไข';
 const FIRST_MAP_ROW = 17;      // แถวแรกของผังที่นั่ง
 const INSPECTOR_CELL = 'D3';   // ช่องชื่อผู้ตรวจในชีท
-const WRITE_PIN = '';          // รหัสสำหรับ SAVE จากเว็บ เช่น '6020' (เว้นว่าง = ไม่ต้องใช้รหัส)
+const WRITE_PIN = '';          // รหัสเข้าหน้าเว็บและ SAVE เช่น '6020' (เว้นว่าง = ไม่ต้องใช้รหัส)
 const ADMIN_PIN = '';          // รหัสสำหรับปุ่ม "ล้างข้อมูลทั้งหมด" บนเว็บ (เว้นว่าง = ปิดปุ่มนี้)
 
 const SEAT_TXT = ['ปกติ', 'ขัดข้อง-ใช้ได้', 'ใช้ไม่ได้'];
@@ -25,7 +25,10 @@ const SIDE_TH = { L: 'ซ้าย', C: 'กลาง', R: 'ขวา' };
 function doGet(e) {
   const action = (e && e.parameter && e.parameter.action) || 'load';
   try {
-    if (action === 'load') return json_(loadData_());
+    if (action === 'load') {
+      if (WRITE_PIN) return json_({ ok: false, error: 'pin' });  // มีรหัส: ต้องโหลดผ่าน POST พร้อมรหัส
+      return json_(loadData_());
+    }
     return json_({ ok: false, error: 'unknown_action' });
   } catch (err) {
     return json_({ ok: false, error: 'server', message: String(err) });
@@ -36,6 +39,10 @@ function doPost(e) {
   let body;
   try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'bad_request' }); }
   try {
+    if (body.action === 'load') {
+      if (WRITE_PIN && String(body.pin || '') !== WRITE_PIN) return json_({ ok: false, error: 'pin' });
+      return json_(loadData_());
+    }
     if (body.action === 'save') return json_(saveData_(body));
     if (body.action === 'reset') return json_(resetData_(body));
     return json_({ ok: false, error: 'unknown_action' });

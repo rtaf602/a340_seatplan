@@ -162,6 +162,10 @@ dialog.wide[open]{display:flex;flex-direction:column}
 @media print{.bar,.foot,.notice{display:none}}
 .sheetlink{color:var(--accent);font-weight:600;text-decoration:none}
 .sheetlink:hover{text-decoration:underline}
+.gate{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+.gatebox{width:min(360px,100%);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.gatebox h2{margin:0;font-size:20px}.gatebox p{margin:0;color:var(--muted)}
+#gatePin{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:16px}
 #pinIn{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);margin-bottom:12px}
 #adminPin{width:150px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);margin-right:6px}
 </style>
@@ -245,6 +249,16 @@ dialog.wide[open]{display:flex;flex-direction:column}
   <div class="pvbody" id="pvBody"></div>
 </dialog>
 
+<div class="gate" id="gate" hidden>
+  <div class="gatebox" role="dialog" aria-modal="true" aria-labelledby="gateT">
+    <h2 id="gateT">SEAT A340</h2>
+    <p>ใส่รหัสเพื่อเข้าใช้งาน</p>
+    <input id="gatePin" type="password" autocomplete="off" placeholder="รหัส">
+    <p class="err" id="gateErr" hidden></p>
+    <button class="btn pri" id="gateBtn" type="button">เข้าใช้งาน</button>
+  </div>
+</div>
+
 <dialog id="pinDlg" class="small">
   <h3>ใส่รหัสก่อน SAVE</h3>
   <p class="sub" id="pinMsg">ใส่รหัสเพื่อยืนยันการบันทึก</p>
@@ -277,7 +291,8 @@ var CFG=window.SEATPLAN_CONFIG||{}, API=String(CFG.API_URL||'').trim();
 var db=null, canWrite=true, cur=null, pick={s:0,m:0}, resetEnabled=false;
 var pinRequired=null; /* from the server; the PIN is asked on every SAVE and never stored */
 try{localStorage.removeItem('seat-a340-pin')}catch(e){}
-function apiGet(){return fetch(API+(API.indexOf('?')<0?'?':'&')+'action=load&t='+Date.now()).then(function(r){return r.json()})}
+var accessPin=''; /* PIN typed at the entry screen, kept in memory only: reloading the page asks again */
+function apiGet(){return apiPost({action:'load',pin:accessPin})}
 function apiPost(body){return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json()})}
 
 function reg(id,zone,seat,mon,label){ITEMS[id]={zone:zone,seat:seat,mon:mon,label:label}}
@@ -654,11 +669,19 @@ build();
 Object.keys(draft).forEach(function(id){if(!ITEMS[id])delete draft[id]});
 render();
 
+function showGate(err){var g=$('gate');g.hidden=false;$('gateErr').textContent=err||'';$('gateErr').hidden=!err;$('gateBtn').disabled=false;
+  $('gatePin').value='';setTimeout(function(){$('gatePin').focus()},50)}
+function hideGate(){$('gate').hidden=true}
+$('gateBtn').addEventListener('click',function(){var p=$('gatePin').value.trim();if(!p){$('gatePin').focus();return}
+  accessPin=p;$('gateBtn').disabled=true;load()});
+$('gatePin').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('gateBtn').click()}});
 var loading=false;
 function load(){
   if(!API||loading)return Promise.resolve();loading=true;
   return apiGet().then(function(res){
+    if(res&&res.error==='pin'){showGate(accessPin?'รหัสไม่ถูกต้อง ลองอีกครั้ง':'');return}
     if(!res||!res.ok)throw new Error(res&&res.message||'load');
+    hideGate();
     var s2={};Object.keys(res.seats||{}).forEach(function(id){if(ITEMS[id])s2[id]=res.seats[id]});
     saved=s2;lastSave=res.lastSave||null;resetEnabled=!!res.resetEnabled;pinRequired=!!res.pinRequired;$('foot').hidden=!resetEnabled;
     Object.keys(draft).forEach(function(id){if(same(draft[id],saved[id]))delete draft[id]});persistDraft();
@@ -671,8 +694,8 @@ function start(){
   if(CFG.SHEET_URL){$('sheetLink').href=CFG.SHEET_URL;$('sheetLink').hidden=false}
   if(!API){offline();return}
   load();
-  setInterval(function(){if(!document.hidden&&!saving)load()},30000);
-  document.addEventListener('visibilitychange',function(){if(!document.hidden&&!saving)load()});
+  setInterval(function(){if(!document.hidden&&!saving&&$('gate').hidden)load()},30000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden&&!saving&&$('gate').hidden)load()});
 }
 function offline(){$('sync').textContent='ยังไม่ได้ตั้งค่า API_URL ใน config.js หน้านี้จึงยังไม่เชื่อมกับ Google Sheet';
   var n=$('notice');n.hidden=false;n.textContent='ผู้ดูแลต้องติดตั้ง Apps Script และใส่ URL ใน config.js ก่อน (ดู README) ตอนนี้แก้ไขได้แต่ SAVE ไม่ได้'}
