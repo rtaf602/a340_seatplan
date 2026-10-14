@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SEAT A340 ตรวจสภาพที่นั่ง</title>
+<title>STATUS SEAT PLAN A340</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -178,7 +178,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 
 <div class="wrap" id="app">
   <div class="bar">
-    <h1>SEAT A340<small>บันทึกสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร</small></h1>
+    <h1>STATUS SEAT PLAN A340<small>บันทึกสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร</small></h1>
     <div class="who"><label for="inspector">ชื่อผู้ตรวจ</label><input id="inspector" maxlength="60" placeholder="พิมพ์ชื่อของคุณ" autocomplete="off"></div>
     <div class="tools">
       <button class="btn" id="bClear" type="button">CLEAR</button>
@@ -254,7 +254,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 
 <div class="gate" id="gate" hidden>
   <div class="gatebox" role="dialog" aria-modal="true" aria-labelledby="gateT">
-    <h2 id="gateT">SEAT A340</h2>
+    <h2 id="gateT">STATUS SEAT PLAN A340</h2>
     <p>ใส่รหัสเพื่อเข้าใช้งาน</p>
     <input id="gatePin" type="password" autocomplete="off" placeholder="รหัส">
     <p class="err" id="gateErr" hidden></p>
@@ -518,7 +518,7 @@ function stamp(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')
 function reportNode(isPreview){
   var r=el('div','report');if(isPreview)r.dataset.preview='1';
   var h=el('div','blk rhead');
-  h.appendChild(el('h1',null,'SEAT A340 · รายงานสภาพที่นั่งและ Monitor'));
+  h.appendChild(el('h1',null,'STATUS SEAT PLAN A340 · รายงานสภาพที่นั่งและ Monitor'));
   var meta=el('div','rmeta');
   meta.appendChild(el('div',null,'วันที่ออกรายงาน: '+fmt(new Date().toISOString())));
   meta.appendChild(el('div',null,'ผู้ตรวจ: '+(who.value.trim()||'-')));
@@ -624,30 +624,21 @@ function exportPdf(){
       }
       first=false;
     });
-    return offerFile('SEAT_A340_'+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
+    return offerFile('STATUS_SEAT_PLAN_A340_'+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
   })
   .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){wrap.remove();busy=false});
 }
 function exportXlsx(){
   if(busy)return;busy=true;toast('กำลังสร้าง Excel…'+exportNote());
-  loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js').then(function(){
-    useSaved=true;try{
-    var X=window.XLSX,wb=X.utils.book_new();
-    var head=[['SEAT A340 · รายงานสภาพที่นั่งและ Monitor'],['วันที่ออกรายงาน',fmt(new Date().toISOString())],['ผู้ตรวจ',who.value.trim()||'-'],[$('lastSave').textContent],[]];
-    var sum=head.concat([['ZONE','ที่นั่งรวม','ใช้งานได้ปกติ','ขัดข้องแต่ใช้ได้ / Manual ได้','ใช้งานไม่ได้','Monitor','Monitor ใช้งานได้','Monitor เสื่อมสภาพ','Monitor เสีย']]);
-    summaryData().forEach(function(r){var v=r.v;sum.push([r.name,v.t,v.s[0],v.s[1],v.s[2],v.mt,v.m[0],v.m[1],v.m[2]])});
-    var ws1=X.utils.aoa_to_sheet(sum);ws1['!cols']=[{wch:22},{wch:11},{wch:14},{wch:26},{wch:14},{wch:10},{wch:18},{wch:18},{wch:14}];
-    X.utils.book_append_sheet(wb,ws1,'สรุป');
-    function rowsOf(ids){var a=[['ที่นั่ง / จุด','ประเภท','โซน','สภาพที่นั่ง','สภาพ Monitor','หมายเหตุ','ผู้บันทึก','เวลา','สถานะ']];
-      ids.forEach(function(id){var d=get(id),it=ITEMS[id];
-        a.push([id.indexOf('MON-')===0?it.label:id,it.seat?'ที่นั่ง':'Monitor',zoneName(it.zone),it.seat?S_LABEL[d.s]:'-',it.mon?M_LABEL[d.m]:'-',d.note,d.by,fmt(d.at),pend(id)?'ยังไม่ SAVE':(saved[id]?'SAVE แล้ว':'-')])});
-      var ws=X.utils.aoa_to_sheet(a);ws['!cols']=[{wch:28},{wch:9},{wch:18},{wch:30},{wch:20},{wch:40},{wch:18},{wch:18},{wch:12}];return ws}
-    X.utils.book_append_sheet(wb,rowsOf(defectIds()),'ข้อขัดข้อง');
-    X.utils.book_append_sheet(wb,rowsOf(Object.keys(ITEMS)),'ทุกที่นั่งและ Monitor');
-    var buf=X.write(wb,{bookType:'xlsx',type:'array'});
-    }finally{useSaved=false}
-    return offerFile('SEAT_A340_'+stamp()+'.xlsx',buf,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  /* history comes from the Google Sheet; an older Apps Script without it still exports the other sheets */
+  var hist=API?apiPost({action:'history',pin:accessPin}).then(function(r){return r&&r.ok?r.rows:null},function(){return null}):Promise.resolve(null);
+  Promise.all([loadLib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'),loadLib('export-excel.js'),hist]).then(function(res){
+    var st={};Object.keys(ITEMS).forEach(function(id){st[id]=norm(saved[id])});
+    var wb=window.buildSeatWorkbook(window.ExcelJS,{state:st,lastSave:lastSave,inspector:who.value.trim(),history:res[2]});
+    return wb.xlsx.writeBuffer();
+  }).then(function(buf){
+    return offerFile('STATUS_SEAT_PLAN_A340_'+stamp()+'.xlsx',buf,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   })
   .catch(function(){toast('สร้าง Excel ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){busy=false});

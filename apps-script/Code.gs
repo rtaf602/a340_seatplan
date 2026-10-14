@@ -43,6 +43,10 @@ function doPost(e) {
       if (WRITE_PIN && String(body.pin || '') !== WRITE_PIN) return json_({ ok: false, error: 'pin' });
       return json_(loadData_());
     }
+    if (body.action === 'history') {
+      if (WRITE_PIN && String(body.pin || '') !== WRITE_PIN) return json_({ ok: false, error: 'pin' });
+      return json_(historyData_());
+    }
     if (body.action === 'save') return json_(saveData_(body));
     if (body.action === 'reset') return json_(resetData_(body));
     return json_({ ok: false, error: 'unknown_action' });
@@ -119,6 +123,17 @@ function loadData_() {
   });
   const ls = PropertiesService.getScriptProperties().getProperty('lastSave');
   return { ok: true, seats: seats, lastSave: ls ? JSON.parse(ls) : null, pinRequired: !!WRITE_PIN, resetEnabled: !!ADMIN_PIN };
+}
+
+/** ทุกบรรทัดในแท็บประวัติ (สำหรับ EXPORT TO EXCEL) วันเวลาส่งเป็น ISO */
+function historyData_() {
+  const log = SpreadsheetApp.getActive().getSheetByName(LOG_SHEET);
+  const n = log.getLastRow();
+  if (n < 2) return { ok: true, rows: [] };
+  const rows = log.getRange(2, 1, n - 1, 7).getValues().map(function (r) {
+    return r.map(function (v, j) { return (j === 0 && v instanceof Date) ? v.toISOString() : (v === null ? '' : String(v)); });
+  });
+  return { ok: true, rows: rows };
 }
 
 function saveData_(body) {

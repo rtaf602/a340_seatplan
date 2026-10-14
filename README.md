@@ -1,4 +1,4 @@
-# SEAT A340 · ตรวจสภาพที่นั่งและ Monitor
+# STATUS SEAT PLAN A340 · ตรวจสภาพที่นั่งและ Monitor
 
 หน้าเว็บให้ฝ่ายการช่าง/ฝ่ายสื่อสารบันทึกสภาพที่นั่งและ Monitor ของเครื่อง A340 (165 ที่นั่ง, Monitor 48 จอ)
 ข้อมูลทุกครั้งที่กด **SAVE** จะบันทึกลง Google Sheet **Seat Plan 340 (For Admin)** โดยตรง
@@ -7,6 +7,7 @@
 | ไฟล์ | หน้าที่ |
 |---|---|
 | `index.html` | หน้าเว็บ (ผังที่นั่ง, ปุ่ม CLEAR / PREVIEW / SAVE / EXPORT TO PDF / EXPORT TO EXCEL) |
+| `export-excel.js` | สร้างไฟล์ EXPORT TO EXCEL 4 แผ่นงาน: ผังที่นั่ง, รวมข้อขัดข้องคงค้าง, ทุกที่นั่ง และ Monitor, ประวัติการแก้ไข |
 | `config.js` | ใส่ URL ของ Apps Script Web App และลิงก์ Google Sheet |
 | `apps-script/Code.gs` | โค้ดที่วางใน Apps Script ของ Google Sheet: อ่าน/บันทึกข้อมูลให้หน้าเว็บ และเก็บประวัติเมื่อแก้ในชีทโดยตรง |
 
