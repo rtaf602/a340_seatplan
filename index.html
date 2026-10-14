@@ -209,7 +209,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
   <div id="zones"></div>
 
   <section class="defects">
-    <h2>รายการข้อขัดข้องและหมายเหตุ <span id="dcount"></span></h2>
+    <h2>รวมข้อขัดข้องคงค้าง <span id="dcount"></span></h2>
     <ul id="dlist"></ul>
     <p class="empty" id="dempty">ยังไม่มีรายการ แตะที่นั่งหรือ Monitor ในผังเพื่อบันทึกข้อขัดข้อง</p>
   </section>
@@ -537,7 +537,7 @@ function reportNode(isPreview){
     r.appendChild(c);
   });
   var ids=defectIds(),dsec=el('div','blk');
-  dsec.appendChild(el('h2',null,'รายการข้อขัดข้องและหมายเหตุ ('+ids.length+')'));
+  dsec.appendChild(el('h2',null,'รวมข้อขัดข้องคงค้าง ('+ids.length+')'));
   if(!ids.length)dsec.appendChild(el('p',null,'ไม่มีข้อขัดข้อง'));
   else{
     var dt=el('table','rdef'),th=el('tr');
