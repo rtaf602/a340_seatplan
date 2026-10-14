@@ -8,7 +8,7 @@
 |---|---|
 | `index.html` | หน้าเว็บ (ผังที่นั่ง, ปุ่ม CLEAR / PREVIEW / SAVE / EXPORT TO PDF / EXPORT TO EXCEL) |
 | `export-excel.js` | สร้างไฟล์ EXPORT TO EXCEL 4 แผ่นงาน: ผังที่นั่ง, รวมข้อขัดข้องคงค้าง, ทุกที่นั่ง และ Monitor, ประวัติการแก้ไข |
-| `config.js` | ใส่ URL ของ Apps Script Web App และลิงก์ Google Sheet |
+| `config.js` | ใส่ URL ของ Apps Script Web App |
 | `apps-script/Code.gs` | โค้ดที่วางใน Apps Script ของ Google Sheet: อ่าน/บันทึกข้อมูลให้หน้าเว็บ และเก็บประวัติเมื่อแก้ในชีทโดยตรง |
 
 ## การติดตั้ง (ทำครั้งเดียว)

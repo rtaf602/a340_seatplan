@@ -187,7 +187,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
       <button class="btn" id="bPdf" type="button">EXPORT TO PDF</button>
       <button class="btn" id="bXls" type="button">EXPORT TO EXCEL</button>
     </div>
-    <div class="status"><span class="pend" id="pend"></span><span id="lastSave"></span><a class="sheetlink" id="sheetLink" target="_blank" rel="noopener" hidden>เปิด Google Sheet</a></div>
+    <div class="status"><span class="pend" id="pend"></span><span id="lastSave"></span></div>
     <div class="sync" id="sync">กำลังโหลดข้อมูล…</div>
   </div>
   <div class="notice" id="notice" hidden></div>
@@ -685,7 +685,6 @@ function load(){
   .then(function(){loading=false});
 }
 function start(){
-  if(CFG.SHEET_URL){$('sheetLink').href=CFG.SHEET_URL;$('sheetLink').hidden=false}
   if(!API){offline();return}
   load();
   setInterval(function(){if(!document.hidden&&!saving&&$('gate').hidden)load()},30000);
