@@ -167,6 +167,55 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .report .rdef tr:last-child td{font-weight:400}
 .report .rnote{font-size:12px;color:var(--muted);margin:6px 0 0}
 .offscreen{position:fixed;left:-10000px;top:0}
+/* EXPORT TO PDF A4 1PAGE: landscape A4, map + summary on top, outstanding defects below (1070px = 283mm wide) */
+.report.op1{width:1070px;padding:0;gap:9px;--cabin:#f3f6f9}
+.op1 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:2px solid var(--accent);padding-bottom:6px}
+.op1 .top h1{font-size:19px;margin:0;letter-spacing:.5px}
+.op1 .top .sub{font-size:10.5px;color:var(--muted)}
+.op1 .meta{display:grid;grid-template-columns:auto auto;gap:1px 12px;font-size:11px;text-align:left}
+.op1 .meta b{font-weight:700}
+.op1 .body{display:flex;gap:11px;align-items:flex-start}
+.op1 .map{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:635px;flex:none;align-items:start}
+.op1 .col{display:flex;flex-direction:column;gap:8px}
+.report.op1 .zone{padding:5px 5px 7px;border-radius:5px;background:var(--cabin);border:1px solid var(--line)}
+.report.op1 .zone header{margin-bottom:5px}
+.report.op1 .zone header h2{font-size:10.5px;margin:0}
+.report.op1 .zone header span{font-size:8px;padding:1px 5px}
+.report.op1 .rows{--sw:19px;--sg:1.5px;gap:4px}
+.report.op1 .row{gap:1.5px}
+.report.op1 .rowno{font-size:8.5px;width:14px;padding-bottom:3px}
+.report.op1 .aisle{width:6px}
+.report.op1 .seat{gap:1.5px}
+.report.op1 .seat .m{height:3px}
+.report.op1 .seat .s{height:19px;font-size:9px;border-radius:3px 3px 2px 2px}
+.report.op1 .seat[data-note] .s::before{height:3px}
+.report.op1 .ovhrow{height:13px;margin-block:1px}
+.report.op1 .ovh{font-size:7.5px;padding:0 5px}
+.report.op1 .ovh[data-note]::before{height:2px}
+.report.op1 .cclabel{font-size:8px;height:19px;left:calc(100% + 4px)}
+.report.op1 .cclabel.room::before{left:calc(-1 * (var(--sw) + 4px + 6px));right:-6px;top:-10px;bottom:-5px;border-width:1.2px;border-radius:5px}
+.report.op1 .zone .rows:has(.cclabel.room){padding-block:9px}
+.op1 .side{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.op1 h3{font-size:12px;margin:0 0 4px}
+.report.op1 table{border-collapse:collapse;width:100%;min-width:0}
+.op1 .sum{table-layout:fixed}
+.report.op1 .sum th,.report.op1 .sum td{font-size:9px;padding:2px 3px;border:1px solid var(--line);text-align:center;overflow:hidden}
+.report.op1 .sum th{background:#eef2f6;font-weight:700}
+.report.op1 .sum th:first-child{width:27%}
+.report.op1 .sum td:first-child,.report.op1 .sum th:first-child{text-align:left}
+.report.op1 .sum th i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:2px}
+.report.op1 .sum tr:last-child td{font-weight:700;background:#eef2f6}
+.op1 .leg{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:9px;color:var(--muted)}
+.op1 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:3px}
+.report.op1 .def th,.report.op1 .def td{font-size:10px;padding:2px 4px;border:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.35;font-weight:400}
+.report.op1 .def th{background:#eef2f6;font-weight:700}
+.op1 .def td.n{text-align:center;color:var(--muted)}
+.report.op1 .def td.id{font-weight:700;white-space:nowrap}
+.op1 .def td.nw{white-space:nowrap}
+.op1 .def td.w{background:var(--warn-soft)} .op1 .def td.b{background:var(--bad-soft)}
+.op1 .empty{font-size:11px;color:var(--muted);margin:0}
+.op1 .foot{display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:4px}
+
 @media (max-width:600px){.bar{padding-block:8px;gap:6px 10px}.bar .sync{display:none}.tools .btn{padding:6px 9px;font-size:12px}.who input{width:130px}}
 @media print{.bar,.foot,.notice{display:none}}
 .sheetlink{color:var(--accent);font-weight:600;text-decoration:none}
@@ -191,6 +240,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
       <button class="btn" id="bPreview" type="button">PREVIEW</button>
       <button class="btn pri" id="bSave" type="button">SAVE</button>
       <button class="btn" id="bPdf" type="button">EXPORT TO PDF</button>
+      <button class="btn" id="bPdf1" type="button">EXPORT TO PDF A4 1PAGE</button>
       <button class="btn" id="bXls" type="button">EXPORT TO EXCEL</button>
     </div>
     <div class="status"><span class="pend" id="pend"></span><span id="lastSave"></span></div>
@@ -707,6 +757,74 @@ function exportPdf(){
   .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){wrap.remove();busy=false});
 }
+
+/* ---------- EXPORT TO PDF A4 1PAGE ---------- */
+function thLT(at){if(!at)return '-';var d=new Date(at);if(isNaN(d))return '-';var t=new Date(d.getTime()+7*3600e3),p=function(n){return String(n).padStart(2,'0')};
+  return p(t.getUTCDate())+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][t.getUTCMonth()]+p(t.getUTCFullYear()%100)+' ('+p(t.getUTCHours())+':'+p(t.getUTCMinutes())+' TH-LT)'}
+function onePageNode(){
+  var r=el('div','report op1');
+  var top=el('div','top'),tl=el('div');tl.appendChild(el('h1',null,'STATUS SEAT PLAN A340'));
+  tl.appendChild(el('div','sub','รายงานสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร'));top.appendChild(tl);
+  var meta=el('div','meta');
+  [['ผู้ตรวจ',who.value.trim()||'-'],['SAVE ล่าสุด',lastSave&&lastSave.at?thLT(lastSave.at)+(lastSave.by?' · '+lastSave.by:''):'ยังไม่เคย SAVE'],['ออกรายงาน',thLT(new Date().toISOString())]]
+    .forEach(function(x){meta.appendChild(el('span',null,x[0]));meta.appendChild(el('b',null,x[1]))});
+  top.appendChild(meta);r.appendChild(top);
+  var body=el('div','body'),map=el('div','map'),cols=[el('div','col'),el('div','col'),el('div','col')];
+  cols.forEach(function(c){map.appendChild(c)});
+  $('zones').querySelectorAll('section.zone').forEach(function(z,i){
+    var c=z.cloneNode(true);c.setAttribute('inert','');c.removeAttribute('id');
+    c.querySelectorAll('[data-id]').forEach(function(b){var id=b.dataset.id,it=ITEMS[id],d=get(id);
+      if(it.seat)b.dataset.s=d.s;if(it.mon)b.dataset.m=d.m;if(d.note)b.dataset.note='1';else delete b.dataset.note;delete b.dataset.pending});
+    cols[i<3?0:(i===3?1:2)].appendChild(c);
+  });
+  body.appendChild(map);
+  var side=el('div','side'),sb=el('div');sb.appendChild(el('h3',null,'สรุปตามโซน'));
+  var t=el('table','sum');t.innerHTML=summaryHTML();sb.appendChild(t);side.appendChild(sb);
+  var lg=el('div','leg');
+  [['var(--ok)','ใช้งานได้ปกติ'],['var(--warn)','ขัดข้องแต่ใช้ได้ / Manual ได้ (!)'],['var(--bad)','ใช้งานไม่ได้ (×)']].forEach(function(x){
+    var s=el('span');var i=el('i');i.style.background=x[0];s.appendChild(i);s.appendChild(document.createTextNode(x[1]));lg.appendChild(s)});
+  var s1=el('span'),i1=el('i');i1.style.cssText='background:var(--ok);height:3px;vertical-align:2px';s1.appendChild(i1);s1.appendChild(document.createTextNode('แถบบนที่นั่ง / ป้าย Monitor = จอ'));lg.appendChild(s1);
+  var s2=el('span'),i2=el('i');i2.style.cssText='background:var(--ok);border-bottom:3px solid var(--ink);box-sizing:border-box';s2.appendChild(i2);s2.appendChild(document.createTextNode('ขีดล่าง = มีหมายเหตุ'));lg.appendChild(s2);
+  side.appendChild(lg);body.appendChild(side);r.appendChild(body);
+  var ids=defectIds(),ds=el('div');ds.appendChild(el('h3',null,'รวมข้อขัดข้องคงค้าง ('+ids.length+' รายการ)'));
+  if(!ids.length)ds.appendChild(el('p','empty','ไม่มีข้อขัดข้อง'));
+  else{
+    var dt=el('table','def'),hr=el('tr');
+    ['#','ที่นั่ง / จุด','โซน','ที่นั่ง','Monitor','หมายเหตุ','ผู้บันทึก · เวลา'].forEach(function(x){hr.appendChild(el('th',null,x))});
+    var th=el('thead');th.appendChild(hr);dt.appendChild(th);var tb=el('tbody');
+    var SS=['ปกติ','ขัดข้อง-ใช้ได้','ใช้ไม่ได้'],MM=['ปกติ','เสื่อม','เสีย'];
+    ids.forEach(function(id,k){var d=get(id),it=ITEMS[id],tr=el('tr');
+      tr.appendChild(el('td','n',String(k+1)));
+      tr.appendChild(el('td','id',id==='CC'?'CC (Commander Center)':(id.indexOf('MON-')===0?it.label:id)));
+      tr.appendChild(el('td','nw',zoneName(it.zone)));
+      tr.appendChild(el('td','nw'+(it.seat&&d.s?(d.s===1?' w':' b'):''),it.seat?SS[d.s]:'-'));
+      tr.appendChild(el('td','nw'+(it.mon&&d.m?(d.m===1?' w':' b'):''),it.mon?MM[d.m]:'-'));
+      tr.appendChild(el('td',null,d.note||'-'));
+      tr.appendChild(el('td','nw',[d.by,d.at?thLT(d.at).replace(' TH-LT',''):''].filter(Boolean).join(' · ')||'-'));
+      tb.appendChild(tr)});
+    dt.appendChild(tb);ds.appendChild(dt);
+  }
+  r.appendChild(ds);
+  var f=el('div','foot');f.appendChild(el('span',null,'ข้อมูลจาก SAVE ล่าสุดใน Google Sheet'));f.appendChild(el('span',null,'STATUS SEAT PLAN A340 · หน้า 1/1'));r.appendChild(f);
+  return r;
+}
+function exportPdf1(){
+  if(busy)return;busy=true;toast('กำลังสร้าง PDF A4 1 หน้า…'+exportNote());
+  useSaved=true;var wrap=el('div','offscreen'),node;try{node=onePageNode()}finally{useSaved=false}
+  wrap.appendChild(node);document.body.appendChild(wrap);
+  Promise.all([loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),document.fonts?document.fonts.ready:null])
+  .then(function(){return html2canvas(node,{scale:2,backgroundColor:'#ffffff',logging:false})})
+  .then(function(cv){
+    var pdf=new window.jspdf.jsPDF({orientation:'l',unit:'mm',format:'a4'});
+    var M=7,W=297-2*M,H=210-2*M,w=W,h=cv.height*W/cv.width;
+    if(h>H){w=w*H/h;h=H}  /* many defects: shrink the whole page so it still fits on one sheet */
+    pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',M+(W-w)/2,M,w,h);
+    return offerFile('A4 1P STATUS_SEAT_PLAN_A340_'+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
+  })
+  .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
+  .then(function(){wrap.remove();busy=false});
+}
+$('bPdf1').addEventListener('click',function(){guard('EXPORT TO PDF A4 1PAGE',exportPdf1)});
 function exportXlsx(){
   if(busy)return;busy=true;toast('กำลังสร้าง Excel…'+exportNote());
   /* history comes from the Google Sheet; an older Apps Script without it still exports the other sheets */
