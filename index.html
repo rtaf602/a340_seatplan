@@ -167,7 +167,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .report .rdef tr:last-child td{font-weight:400}
 .report .rnote{font-size:12px;color:var(--muted);margin:6px 0 0}
 .offscreen{position:fixed;left:-10000px;top:0}
-/* EXPORT TO PDF A4 1PAGE: landscape A4, map + summary on top, outstanding defects below (1070px = 283mm wide) */
+/* EXPORT TO PDF A4 2PAGE: landscape A4 pages 1070x741px (= 283x196mm). Page 1 seat map + summary, next pages outstanding defects */
 .report.op1{width:1070px;padding:0;gap:9px;--cabin:#f3f6f9}
 .op1 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:2px solid var(--accent);padding-bottom:6px}
 .op1 .top h1{font-size:19px;margin:0;letter-spacing:.5px}
@@ -214,6 +214,24 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .def td.nw{white-space:nowrap}
 .op1 .def td.w{background:var(--warn-soft)} .op1 .def td.b{background:var(--bad-soft)}
 .op1 .empty{font-size:11px;color:var(--muted);margin:0}
+.report.op1.pg{height:741px;overflow:hidden}
+.op1 .fill{flex:1}
+.op1.pg1 .map{width:745px;gap:10px}
+.report.op1.pg1 .rows{--sw:24px;--sg:2px;gap:7px}
+.report.op1.pg1 .seat .s{height:27px;font-size:11px}
+.report.op1.pg1 .seat .m{height:4px}
+.report.op1.pg1 .rowno{font-size:10px;width:18px}
+.report.op1.pg1 .aisle{width:9px}
+.report.op1.pg1 .zone header h2{font-size:12px}
+.report.op1.pg1 .ovhrow{height:16px}
+.report.op1.pg1 .ovh{font-size:9px}
+.report.op1.pg1 .cclabel{font-size:10px;height:27px}
+.op1.pg1 .side{gap:10px}
+.report.op1.pg1 .sum th,.report.op1.pg1 .sum td{font-size:9.5px;padding:3px 2px}
+.report.op1.pg1 .sum th:first-child{width:30%}
+.op1.pg1 .leg{font-size:10px;flex-direction:column}
+.op1 .defsnote{font-size:11px;margin:4px 0 0;padding:6px 8px;background:#eef2f6;border-radius:4px}
+.report.op1.pgd .def th,.report.op1.pgd .def td{font-size:10px;padding:1.5px 5px}
 .op1 .foot{display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:4px}
 
 @media (max-width:600px){.bar{padding-block:8px;gap:6px 10px}.bar .sync{display:none}.tools .btn{padding:6px 9px;font-size:12px}.who input{width:130px}}
@@ -240,7 +258,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
       <button class="btn" id="bPreview" type="button">PREVIEW</button>
       <button class="btn pri" id="bSave" type="button">SAVE</button>
       <button class="btn" id="bPdf" type="button">EXPORT TO PDF</button>
-      <button class="btn" id="bPdf1" type="button">EXPORT TO PDF A4 1PAGE</button>
+      <button class="btn" id="bPdf2" type="button">EXPORT TO PDF A4 2PAGE</button>
       <button class="btn" id="bXls" type="button">EXPORT TO EXCEL</button>
     </div>
     <div class="status"><span class="pend" id="pend"></span><span id="lastSave"></span></div>
@@ -758,17 +776,20 @@ function exportPdf(){
   .then(function(){wrap.remove();busy=false});
 }
 
-/* ---------- EXPORT TO PDF A4 1PAGE ---------- */
+/* ---------- EXPORT TO PDF A4 2PAGE ---------- */
 function thLT(at){if(!at)return '-';var d=new Date(at);if(isNaN(d))return '-';var t=new Date(d.getTime()+7*3600e3),p=function(n){return String(n).padStart(2,'0')};
   return p(t.getUTCDate())+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][t.getUTCMonth()]+p(t.getUTCFullYear()%100)+' ('+p(t.getUTCHours())+':'+p(t.getUTCMinutes())+' TH-LT)'}
-function onePageNode(){
-  var r=el('div','report op1');
-  var top=el('div','top'),tl=el('div');tl.appendChild(el('h1',null,'STATUS SEAT PLAN A340'));
-  tl.appendChild(el('div','sub','รายงานสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร'));top.appendChild(tl);
+function pgTop(sub){
+  var top=el('div','top'),tl=el('div');tl.appendChild(el('h1',null,'STATUS SEAT PLAN A340'));tl.appendChild(el('div','sub',sub));top.appendChild(tl);
   var meta=el('div','meta');
   [['ผู้ตรวจ',who.value.trim()||'-'],['SAVE ล่าสุด',lastSave&&lastSave.at?thLT(lastSave.at)+(lastSave.by?' · '+lastSave.by:''):'ยังไม่เคย SAVE'],['ออกรายงาน',thLT(new Date().toISOString())]]
     .forEach(function(x){meta.appendChild(el('span',null,x[0]));meta.appendChild(el('b',null,x[1]))});
-  top.appendChild(meta);r.appendChild(top);
+  top.appendChild(meta);return top;
+}
+function pgFoot(){var f=el('div','foot');f.appendChild(el('span',null,'ข้อมูลจาก SAVE ล่าสุดใน Google Sheet'));f.appendChild(el('span','pgno',''));return f}
+/* page 1: seat map, zone summary, legend */
+function mapPage(nDef){
+  var r=el('div','report op1 pg pg1');r.appendChild(pgTop('รายงานสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร'));
   var body=el('div','body'),map=el('div','map'),cols=[el('div','col'),el('div','col'),el('div','col')];
   cols.forEach(function(c){map.appendChild(c)});
   $('zones').querySelectorAll('section.zone').forEach(function(z,i){
@@ -785,46 +806,69 @@ function onePageNode(){
     var s=el('span');var i=el('i');i.style.background=x[0];s.appendChild(i);s.appendChild(document.createTextNode(x[1]));lg.appendChild(s)});
   var s1=el('span'),i1=el('i');i1.style.cssText='background:var(--ok);height:3px;vertical-align:2px';s1.appendChild(i1);s1.appendChild(document.createTextNode('แถบบนที่นั่ง / ป้าย Monitor = จอ'));lg.appendChild(s1);
   var s2=el('span'),i2=el('i');i2.style.cssText='background:var(--ok);border-bottom:3px solid var(--ink);box-sizing:border-box';s2.appendChild(i2);s2.appendChild(document.createTextNode('ขีดล่าง = มีหมายเหตุ'));lg.appendChild(s2);
-  side.appendChild(lg);body.appendChild(side);r.appendChild(body);
-  var ids=defectIds(),ds=el('div');ds.appendChild(el('h3',null,'รวมข้อขัดข้องคงค้าง ('+ids.length+' รายการ)'));
-  if(!ids.length)ds.appendChild(el('p','empty','ไม่มีข้อขัดข้อง'));
-  else{
-    var dt=el('table','def'),hr=el('tr');
-    ['#','ที่นั่ง / จุด','โซน','ที่นั่ง','Monitor','หมายเหตุ','ผู้บันทึก · เวลา'].forEach(function(x){hr.appendChild(el('th',null,x))});
-    var th=el('thead');th.appendChild(hr);dt.appendChild(th);var tb=el('tbody');
-    var SS=['ปกติ','ขัดข้อง-ใช้ได้','ใช้ไม่ได้'],MM=['ปกติ','เสื่อม','เสีย'];
-    ids.forEach(function(id,k){var d=get(id),it=ITEMS[id],tr=el('tr');
-      tr.appendChild(el('td','n',String(k+1)));
-      tr.appendChild(el('td','id',id==='CC'?'CC (Commander Center)':(id.indexOf('MON-')===0?it.label:id)));
-      tr.appendChild(el('td','nw',zoneName(it.zone)));
-      tr.appendChild(el('td','nw'+(it.seat&&d.s?(d.s===1?' w':' b'):''),it.seat?SS[d.s]:'-'));
-      tr.appendChild(el('td','nw'+(it.mon&&d.m?(d.m===1?' w':' b'):''),it.mon?MM[d.m]:'-'));
-      tr.appendChild(el('td',null,d.note||'-'));
-      tr.appendChild(el('td','nw',[d.by,d.at?thLT(d.at).replace(' TH-LT',''):''].filter(Boolean).join(' · ')||'-'));
-      tb.appendChild(tr)});
-    dt.appendChild(tb);ds.appendChild(dt);
-  }
-  r.appendChild(ds);
-  var f=el('div','foot');f.appendChild(el('span',null,'ข้อมูลจาก SAVE ล่าสุดใน Google Sheet'));f.appendChild(el('span',null,'STATUS SEAT PLAN A340 · หน้า 1/1'));r.appendChild(f);
-  return r;
+  side.appendChild(lg);
+  var note=el('p','defsnote');
+  if(nDef){note.appendChild(el('b',null,'รวมข้อขัดข้องคงค้าง '+nDef+' รายการ'));note.appendChild(document.createTextNode(' · รายละเอียดอยู่หน้า 2'))}
+  else note.appendChild(el('b',null,'ไม่มีข้อขัดข้องคงค้าง'));
+  side.appendChild(note);body.appendChild(side);r.appendChild(body);
+  r.appendChild(el('div','fill'));r.appendChild(pgFoot());return r;
 }
-function exportPdf1(){
-  if(busy)return;busy=true;toast('กำลังสร้าง PDF A4 1 หน้า…'+exportNote());
-  useSaved=true;var wrap=el('div','offscreen'),node;try{node=onePageNode()}finally{useSaved=false}
-  wrap.appendChild(node);document.body.appendChild(wrap);
+function defRows(){
+  var SS=['ปกติ','ขัดข้อง-ใช้ได้','ใช้ไม่ได้'],MM=['ปกติ','เสื่อม','เสีย'];
+  return defectIds().map(function(id,k){var d=get(id),it=ITEMS[id],tr=el('tr');
+    tr.appendChild(el('td','n',String(k+1)));
+    tr.appendChild(el('td','id',id==='CC'?'CC (Commander Center)':(id.indexOf('MON-')===0?it.label:id)));
+    tr.appendChild(el('td','nw',zoneName(it.zone)));
+    tr.appendChild(el('td','nw'+(it.seat&&d.s?(d.s===1?' w':' b'):''),it.seat?SS[d.s]:'-'));
+    tr.appendChild(el('td','nw'+(it.mon&&d.m?(d.m===1?' w':' b'):''),it.mon?MM[d.m]:'-'));
+    tr.appendChild(el('td',null,d.note||'-'));
+    tr.appendChild(el('td','nw',[d.by,d.at?thLT(d.at).replace(' TH-LT',''):''].filter(Boolean).join(' · ')||'-'));
+    return tr});
+}
+function defPage(total){
+  var r=el('div','report op1 pg pgd');r.appendChild(pgTop('รวมข้อขัดข้องคงค้าง · ต่อจากหน้า 1'));
+  var ds=el('div');ds.appendChild(el('h3',null,'รวมข้อขัดข้องคงค้าง ('+total+' รายการ)'));
+  var dt=el('table','def'),hr=el('tr');
+  ['#','ที่นั่ง / จุด','โซน','ที่นั่ง','Monitor','หมายเหตุ','ผู้บันทึก · เวลา'].forEach(function(x){hr.appendChild(el('th',null,x))});
+  var th=el('thead');th.appendChild(hr);dt.appendChild(th);var tb=el('tbody');dt.appendChild(tb);ds.appendChild(dt);r.appendChild(ds);
+  r.appendChild(el('div','fill'));r.appendChild(pgFoot());r._tb=tb;return r;
+}
+/* builds every page inside host (must be in the DOM so rows can be measured) */
+function buildPages(host){
+  var rows=defRows(),pages=[mapPage(rows.length)];host.appendChild(pages[0]);
+  var i=0;
+  while(i<rows.length){
+    var pg=defPage(rows.length);host.appendChild(pg);pages.push(pg);
+    var fill=pg.querySelector('.fill'),placed=0;
+    while(i<rows.length){
+      pg._tb.appendChild(rows[i]);
+      if(fill.getBoundingClientRect().height<1&&placed>0){pg._tb.removeChild(rows[i]);break} /* page full: move this row to the next page */
+      placed++;i++;
+    }
+  }
+  pages.forEach(function(p,k){p.querySelector('.pgno').textContent='STATUS SEAT PLAN A340 · หน้า '+(k+1)+'/'+pages.length});
+  return pages;
+}
+function exportPdf2(){
+  if(busy)return;busy=true;toast('กำลังสร้าง PDF A4…'+exportNote());
+  var wrap=el('div','offscreen'),pages;document.body.appendChild(wrap);
   Promise.all([loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),document.fonts?document.fonts.ready:null])
-  .then(function(){return html2canvas(node,{scale:2,backgroundColor:'#ffffff',logging:false})})
-  .then(function(cv){
+  .then(function(){
+    useSaved=true;try{pages=buildPages(wrap)}finally{useSaved=false}
+    return pages.reduce(function(p,pg){return p.then(function(arr){return html2canvas(pg,{scale:2,backgroundColor:'#ffffff',logging:false}).then(function(cv){arr.push(cv);return arr})})},Promise.resolve([]));
+  })
+  .then(function(cvs){
     var pdf=new window.jspdf.jsPDF({orientation:'l',unit:'mm',format:'a4'});
-    var M=7,W=297-2*M,H=210-2*M,w=W,h=cv.height*W/cv.width;
-    if(h>H){w=w*H/h;h=H}  /* many defects: shrink the whole page so it still fits on one sheet */
-    pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',M+(W-w)/2,M,w,h);
-    return offerFile('A4 1P STATUS_SEAT_PLAN_A340_'+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
+    var M=7,W=297-2*M,H=210-2*M;
+    cvs.forEach(function(cv,k){if(k)pdf.addPage();var w=W,h=cv.height*W/cv.width;if(h>H){w=w*H/h;h=H}
+      pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',M+(W-w)/2,M,w,h)});
+    return offerFile('A4 2P STATUS_SEAT_PLAN_A340_'+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
   })
   .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){wrap.remove();busy=false});
 }
-$('bPdf1').addEventListener('click',function(){guard('EXPORT TO PDF A4 1PAGE',exportPdf1)});
+$('bPdf2').addEventListener('click',function(){guard('EXPORT TO PDF A4 2PAGE',exportPdf2)});
+
 function exportXlsx(){
   if(busy)return;busy=true;toast('กำลังสร้าง Excel…'+exportNote());
   /* history comes from the Google Sheet; an older Apps Script without it still exports the other sheets */
