@@ -216,20 +216,52 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .empty{font-size:11px;color:var(--muted);margin:0}
 .report.op1.pg{height:741px;overflow:hidden}
 .op1 .fill{flex:1}
-.op1.pg1 .map{width:745px;gap:10px}
-.report.op1.pg1 .rows{--sw:24px;--sg:2px;gap:7px}
-.report.op1.pg1 .seat .s{height:27px;font-size:11px}
-.report.op1.pg1 .seat .m{height:4px}
-.report.op1.pg1 .rowno{font-size:10px;width:18px}
-.report.op1.pg1 .aisle{width:9px}
-.report.op1.pg1 .zone header h2{font-size:12px}
-.report.op1.pg1 .ovhrow{height:16px}
-.report.op1.pg1 .ovh{font-size:9px}
-.report.op1.pg1 .cclabel{font-size:10px;height:27px}
-.op1.pg1 .side{gap:10px}
-.report.op1.pg1 .sum th,.report.op1.pg1 .sum td{font-size:9.5px;padding:3px 2px}
-.report.op1.pg1 .sum th:first-child{width:30%}
-.op1.pg1 .leg{font-size:10px;flex-direction:column}
+/* page 1 of A4 2PAGE: horizontal cabin, nose left */
+.op1.pg1 .lbody{display:flex;flex-direction:column;gap:8px}
+.op1.pg1 .ldir{display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted);font-weight:600}
+.op1.pg1 .lmap{display:flex;gap:7px;align-items:stretch;justify-content:space-between}
+.op1.pg1 .lzone{background:#f3f6f9;border:1px solid var(--line);border-radius:6px;padding:5px 7px 13px;display:flex;flex-direction:column;gap:4px;min-width:86px}
+.op1.pg1 .lzone.lz0{width:96px}
+.op1.pg1 .lzh{display:flex;justify-content:space-between;align-items:flex-start;gap:4px;height:44px;flex:none}
+.op1.pg1 .lzh b{display:block;font-size:10.5px;line-height:1.15}
+.op1.pg1 .lzh span{font-size:9px;color:var(--muted)}
+.op1.pg1 .lzh em{font-style:normal;font-family:var(--mono);font-size:7.5px;font-weight:700;background:var(--accent);color:#fff;border-radius:3px;padding:1px 4px;white-space:nowrap}
+.op1.pg1 .lcols{display:flex;gap:3px;flex:1;justify-content:center;align-items:flex-start}
+.op1.pg1 .lcol{display:flex;flex-direction:column;align-items:center}
+.op1.pg1 .lno{font-family:var(--mono);font-size:9.5px;font-weight:700;color:var(--muted);height:14px;line-height:14px}
+.op1.pg1 .lg{display:flex;flex-direction:column;gap:4px}
+.op1.pg1 .lai{height:16px}
+.op1.pg1 .lseat{display:flex;align-items:center;gap:1px;height:26px}
+.op1.pg1 .lseat.ph{width:27px}
+.op1.pg1 .lm{width:3px;height:18px;border-radius:1px;display:block}
+.op1.pg1 .ls{font-size:10px!important;width:23px;height:26px;border-radius:3px 4px 4px 3px;font-family:var(--mono);font-size:9px;font-weight:700;color:#10202b;display:flex;align-items:center;justify-content:center;position:relative;letter-spacing:-.3px}
+.op1.pg1 .ls.nt::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink);border-radius:0 0 3px 3px}
+.op1.pg1 .lovh{width:8px;border-radius:2px;position:relative}
+.op1.pg1 .lovh.nt::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink)}
+.op1.pg1 .lcol.ov .lg{gap:0}
+.op1.pg1 .lcol.lcc{flex:1}
+.op1.pg1 .lroom{position:relative;align-self:center}
+.op1.pg1 .lcol.lcc .lg{align-items:center}
+.op1.pg1 .lroom::before{content:'';position:absolute;left:-9px;right:-9px;top:-9px;bottom:-9px;border:1.5px solid var(--muted);border-radius:6px}
+.op1.pg1 .lcap{position:absolute;bottom:calc(100% + 13px);left:50%;transform:translateX(-50%);width:84px;text-align:center;line-height:1.2;font-size:8px;color:var(--muted);font-weight:600}
+.op1.pg1 .lleg{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 16px;font-size:9.5px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:4px 8px}
+.op1.pg1 .lleg i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+.op1.pg1 .lleg i.lgm{width:3px;background:var(--ok);margin-right:6px}
+.op1.pg1 .lleg i.lgo{width:5px;height:12px;background:#8a96a3}
+.op1.pg1 .lleg i.lgn{background:var(--ok);border-bottom:3px solid var(--ink);box-sizing:border-box}
+.op1.pg1 .lbot{display:flex;gap:16px;align-items:flex-start}
+.op1.pg1 .lb1{flex:1.45} .lb2{flex:1}
+.op1.pg1 .lbot h3{font-size:12.5px;margin:0 0 5px}
+.report.op1.pg1 .lsum{border-collapse:collapse;width:100%;min-width:0}
+.report.op1.pg1 .lsum th,.report.op1.pg1 .lsum td{font-size:10px;padding:3.5px 5px;border:1px solid var(--line);text-align:center;font-weight:400}
+.report.op1.pg1 .lsum th{background:#eef2f6;font-weight:700;color:var(--ink);font-size:9.5px}
+.report.op1.pg1 .lsum td{font-family:var(--mono);font-weight:600}
+.report.op1.pg1 .lsum td:first-child,.report.op1.pg1 .lsum th:first-child{text-align:left;font-family:var(--sans);font-weight:700}
+.report.op1.pg1 .lsum th i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px}
+.report.op1.pg1 .lsum tbody tr:last-child td{background:#eef2f6;font-weight:700}
+.report.op1.pg1 .lsum td.w.nz{background:var(--warn-soft)!important} .report.op1 .lsum td.b.nz{background:var(--bad-soft)!important}
+.op1.pg1 .mdot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.op1.pg1 .lb2 .defsnote{margin-top:8px}
 .op1 .defsnote{font-size:11px;margin:4px 0 0;padding:6px 8px;background:#eef2f6;border-radius:4px}
 .report.op1.pgd .def th,.report.op1.pgd .def td{font-size:10px;padding:1.5px 5px}
 .op1 .foot{display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:4px}
@@ -787,30 +819,51 @@ function pgTop(sub){
   top.appendChild(meta);return top;
 }
 function pgFoot(){var f=el('div','foot');f.appendChild(el('span',null,'ข้อมูลจาก SAVE ล่าสุดใน Google Sheet'));f.appendChild(el('span','pgno',''));return f}
-/* page 1: seat map, zone summary, legend */
+/* page 1: horizontal cabin (nose left, K-J on top, A-B at bottom), zone summary, monitor summary */
 function mapPage(nDef){
   var r=el('div','report op1 pg pg1');r.appendChild(pgTop('รายงานสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร'));
-  var body=el('div','body'),map=el('div','map'),cols=[el('div','col'),el('div','col'),el('div','col')];
-  cols.forEach(function(c){map.appendChild(c)});
-  $('zones').querySelectorAll('section.zone').forEach(function(z,i){
-    var c=z.cloneNode(true);c.setAttribute('inert','');c.removeAttribute('id');
-    c.querySelectorAll('[data-id]').forEach(function(b){var id=b.dataset.id,it=ITEMS[id],d=get(id);
-      if(it.seat)b.dataset.s=d.s;if(it.mon)b.dataset.m=d.m;if(d.note)b.dataset.note='1';else delete b.dataset.note;delete b.dataset.pending});
-    cols[i<3?0:(i===3?1:2)].appendChild(c);
+  var C=['var(--ok)','var(--warn)','var(--bad)'],SFX=['','!','×'];
+  var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  var seat=function(letter,d){return '<div class="lseat"><i class="lm" style="'+(d.m===null?'visibility:hidden':'background:'+C[d.m])+'"></i><b class="ls'+(d.note?' nt':'')+'" style="background:'+C[d.s]+'">'+letter+SFX[d.s]+'</b></div>'};
+  var empty='<div class="lseat ph"></div>',P=30; /* slot pitch: 26px seat + 4px gap */
+  var top=['K','J'],mid=['G','F','E','D'],bot=['B','A']; /* same slot grid in every zone (Economy layout) */
+  var html='<div class="ldir"><span>◀ หัวเครื่อง (NOSE)</span><span>ด้านบน = ที่นั่งฝั่งขวา (J-K) · ด้านล่าง = ฝั่งซ้าย (A-B)</span><span>ท้ายเครื่อง (TAIL) ▶</span></div><div class="lmap">';
+  ZONES.forEach(function(z){
+    var seats={},ovh={},isCC=false;
+    Object.keys(ITEMS).forEach(function(id){var it=ITEMS[id];if(it.zone!==z.key)return;var d=get(id);
+      var st={s:it.seat?d.s:0,m:it.mon?d.m:null,note:!!d.note};
+      if(id==='CC'){isCC=true;seats.CC=st;return}
+      var mm=id.match(/^MON-(\d+)-([LCR])$/);if(mm){(ovh[mm[1]]=ovh[mm[1]]||{})[mm[2]]=st;return}
+      mm=id.match(/^(\d+)([A-K])$/);if(mm)(seats[mm[1]]=seats[mm[1]]||{})[mm[2]]=st});
+    var m=z.title.match(/^(.*?)\s*\((\d+ Seats?)\)$/)||[0,z.title,''],cols='';
+    if(isCC){
+      cols='<div class="lcol lcc"><div class="lno">&nbsp;</div><div class="lg">'+empty+empty+'</div><div class="lai"></div><div class="lg" style="height:'+(4*P)+'px"></div><div class="lai"></div><div class="lg">'+empty+'<div class="lroom"><div class="lcap">ห้อง Commander Center</div>'+seat('CC',seats.CC)+'</div></div></div>';
+    }else{
+      var rowsN=Object.keys(seats).map(Number).sort(function(a,b){return a-b});
+      var zmid=Math.max.apply(null,rowsN.map(function(n){return mid.filter(function(L){return seats[n][L]}).length}));
+      rowsN.forEach(function(n){
+        var o=ovh[n];
+        if(o){var bar=function(d,k){return '<div class="lovh'+(d.note?' nt':'')+'" style="height:'+(k*P-4)+'px;background:'+C[d.m]+'"></div>'};
+          cols+='<div class="lcol ov"><div class="lno">M</div><div class="lg">'+(o.R?bar(o.R,2):'')+'</div><div class="lai"></div><div class="lg" style="height:'+(4*P)+'px;justify-content:center">'+(o.C?bar(o.C,zmid):'')+'</div><div class="lai"></div><div class="lg">'+(o.L?bar(o.L,2):'')+'</div></div>'}
+        var row=seats[n],g=function(list){return list.map(function(L){return row[L]?seat(L,row[L]):empty}).join('')};
+        var mids=mid.filter(function(L){return row[L]}),off=(4-mids.length)/2;
+        cols+='<div class="lcol"><div class="lno">'+n+'</div><div class="lg">'+g(top)+'</div><div class="lai"></div><div class="lg" style="height:'+(4*P)+'px">'+(off?'<div style="height:'+(off*P-4)+'px"></div>':'')+mids.map(function(L){return seat(L,row[L])}).join('')+'</div><div class="lai"></div><div class="lg">'+g(bot)+'</div></div>';
+      });
+    }
+    html+='<div class="lzone'+(isCC?' lz0':'')+'"><div class="lzh"><div><b>'+esc(m[1])+'</b><span>('+esc(m[2])+')</span></div><em>'+esc(z.tag.replace('ZONE ',''))+'</em></div><div class="lcols">'+cols+'</div></div>';
   });
-  body.appendChild(map);
-  var side=el('div','side'),sb=el('div');sb.appendChild(el('h3',null,'สรุปตามโซน'));
-  var t=el('table','sum');t.innerHTML=summaryHTML();sb.appendChild(t);side.appendChild(sb);
-  var lg=el('div','leg');
-  [['var(--ok)','ใช้งานได้ปกติ'],['var(--warn)','ขัดข้องแต่ใช้ได้ / Manual ได้ (!)'],['var(--bad)','ใช้งานไม่ได้ (×)']].forEach(function(x){
-    var s=el('span');var i=el('i');i.style.background=x[0];s.appendChild(i);s.appendChild(document.createTextNode(x[1]));lg.appendChild(s)});
-  var s1=el('span'),i1=el('i');i1.style.cssText='background:var(--ok);height:3px;vertical-align:2px';s1.appendChild(i1);s1.appendChild(document.createTextNode('แถบบนที่นั่ง / ป้าย Monitor = จอ'));lg.appendChild(s1);
-  var s2=el('span'),i2=el('i');i2.style.cssText='background:var(--ok);border-bottom:3px solid var(--ink);box-sizing:border-box';s2.appendChild(i2);s2.appendChild(document.createTextNode('ขีดล่าง = มีหมายเหตุ'));lg.appendChild(s2);
-  side.appendChild(lg);
-  var note=el('p','defsnote');
-  if(nDef){note.appendChild(el('b',null,'รวมข้อขัดข้องคงค้าง '+nDef+' รายการ'));note.appendChild(document.createTextNode(' · รายละเอียดอยู่หน้า 2'))}
-  else note.appendChild(el('b',null,'ไม่มีข้อขัดข้องคงค้าง'));
-  side.appendChild(note);body.appendChild(side);r.appendChild(body);
+  html+='</div><div class="lleg"><span><i style="background:var(--ok)"></i>ใช้งานได้ปกติ</span><span><i style="background:var(--warn)"></i>ขัดข้องแต่ใช้ได้ / Manual ได้ (!) · จอเสื่อมสภาพ</span><span><i style="background:var(--bad)"></i>ใช้งานไม่ได้ (×) · จอเสีย</span><span><i class="lgm"></i>แถบซ้ายของที่นั่ง = จอที่นั่ง</span><span><i class="lgo"></i>แถบยาว M = Monitor เพดาน</span><span><i class="lgn"></i>ขีดล่าง = มีหมายเหตุ</span></div>';
+  /* monitor summary: seat monitors vs overhead monitors */
+  var mons={seat:[0,0,0],ovh:[0,0,0]};
+  Object.keys(ITEMS).forEach(function(id){var it=ITEMS[id];if(!it.mon)return;mons[id.indexOf('MON-')===0?'ovh':'seat'][get(id).m]++});
+  var cell=function(v,c){return '<td class="'+(v?c+' nz':'')+'">'+v+'</td>'};
+  var mrow=function(name,dot,a){return '<tr><td><i class="mdot" style="background:'+dot+'"></i>'+name+'</td><td>'+(a[0]+a[1]+a[2])+'</td><td>'+a[0]+'</td>'+cell(a[1],'w')+cell(a[2],'b')+'</tr>'};
+  var tot=[0,1,2].map(function(i){return mons.seat[i]+mons.ovh[i]});
+  html+='<div class="lbot"><div class="lb1"><h3>สรุปตามโซน</h3><table class="lsum">'+summaryHTML()+'</table></div><div class="lb2"><h3>สรุปตามชนิด Monitor</h3><table class="lsum lm2"><thead><tr><th>ชนิด Monitor</th><th>จำนวน</th><th><i style="background:var(--ok)"></i>ใช้งานได้</th><th><i style="background:var(--warn)"></i>เสื่อมสภาพ</th><th><i style="background:var(--bad)"></i>เสีย</th></tr></thead><tbody>'+
+    mrow('จอที่นั่ง (Seat Monitor)','var(--ok)',mons.seat)+mrow('Monitor เพดาน (Overhead)','#8a96a3',mons.ovh)+
+    '<tr><td>รวม</td><td>'+(tot[0]+tot[1]+tot[2])+'</td><td>'+tot[0]+'</td>'+cell(tot[1],'w')+cell(tot[2],'b')+'</tr></tbody></table>'+
+    '<p class="defsnote">'+(nDef?'<b>รวมข้อขัดข้องคงค้าง '+nDef+' รายการ</b> · รายละเอียดอยู่หน้า 2':'<b>ไม่มีข้อขัดข้องคงค้าง</b>')+'</p></div></div>';
+  var b=el('div','lbody');b.innerHTML=html;r.appendChild(b);
   r.appendChild(el('div','fill'));r.appendChild(pgFoot());return r;
 }
 function defRows(){
