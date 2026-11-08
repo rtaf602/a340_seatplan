@@ -482,7 +482,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
       <button class="btn" id="bPreview" type="button">PREVIEW</button>
       <button class="btn pri" id="bSave" type="button">SAVE</button>
       <button class="btn" id="bPdf" type="button">EXPORT TO PDF ALL PAGES</button>
-      <button class="btn" id="bPdf2" type="button">EXPORT SUMMARY 4 PAGES</button>
+      <button class="btn" id="bPdf2" type="button">EXPORT PDF SUMMARY 4 PAGES</button>
       <button class="btn" id="bXls" type="button">EXPORT TO EXCEL</button>
     </div>
     <div class="status"><span class="pend" id="pend"></span><span id="lastSave"></span></div>
@@ -1141,7 +1141,7 @@ var pvMode='all';
 function renderPreview(){
   var host=$('pvBody');host.textContent='';
   $('pvTabAll').setAttribute('aria-selected',String(pvMode==='all'));$('pvTabSum').setAttribute('aria-selected',String(pvMode==='sum'));
-  $('pvPdf').textContent=pvMode==='all'?'EXPORT TO PDF ALL PAGES':'EXPORT SUMMARY 4 PAGES';
+  $('pvPdf').textContent=pvMode==='all'?'EXPORT TO PDF ALL PAGES':'EXPORT PDF SUMMARY 4 PAGES';
   useSaved=true;
   try{
     if(pvMode==='all'){
@@ -1227,7 +1227,7 @@ function exportPdf(){
   .then(function(){wrap.remove();busy=false});
 }
 
-/* ---------- EXPORT SUMMARY 4 PAGES (A4 landscape) ---------- */
+/* ---------- EXPORT PDF SUMMARY 4 PAGES (A4 landscape) ---------- */
 function thLT(at){if(!at)return '-';var d=new Date(at);if(isNaN(d))return '-';var t=new Date(d.getTime()+7*3600e3),p=function(n){return String(n).padStart(2,'0')};
   return p(t.getUTCDate())+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][t.getUTCMonth()]+p(t.getUTCFullYear()%100)+' ('+p(t.getUTCHours())+':'+p(t.getUTCMinutes())+' TH-LT)'}
 function pgTop(sub){
@@ -1448,7 +1448,7 @@ function exportPdf2(){
   .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){wrap.remove();busy=false});
 }
-$('bPdf2').addEventListener('click',function(){guard('EXPORT SUMMARY 4 PAGES',exportPdf2)});
+$('bPdf2').addEventListener('click',function(){guard('EXPORT PDF SUMMARY 4 PAGES',exportPdf2)});
 
 function exportXlsx(){
   if(busy)return;busy=true;toast('กำลังสร้าง Excel…'+exportNote());
