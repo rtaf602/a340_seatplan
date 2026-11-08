@@ -23,7 +23,7 @@ const GM_SUBS = {
   G1A: [['BOILER-1', 'CM-1', 'CM-2'], ['ESP-1', 'OVEN-1', 'OVEN-2']],
   G2L: [['CHILLER-1'], ['STORE-1']], G2: [['CHILLER-1*3'], ['OVEN-1', 'OVEN-2', 'STORE-1']], G2R: [['CHILLER-1'], ['STORE-1']],
   G2AL: [['STORE-1']], G2AR: [['STORE-1']],
-  G2A: [['CHILLER-1', '', 'BOILER-1'], ['ESP-1', 'CM-1', 'CM-2'], ['OVEN-1', 'OVEN-2', 'MW-1'], ['HOTCUP-1', 'HOTCUP-2', 'HOTCUP-3']],
+  G2A: [['CHILLER-1*3', 'BOILER-1*3'], ['ESP-1*2', 'CM-1*2', 'CM-2*2'], ['OVEN-1*2', 'OVEN-2*2', 'MW-1*2'], ['HOTCUP-1*2', 'HOTCUP-2*2', 'HOTCUP-3*2']],
   G5: [['STORE-1']], G6: [['CHILLER-1'], ['STORE-1']],
   G7: [['BOILER-1*2'], ['CM-1', 'CM-2'], ['CM-3', ''], ['OVEN-1', 'OVEN-2'], ['OVEN-3', 'OVEN-4'], ['OVEN-5', 'OVEN-6'], ['HOTCUP-1', 'HOTCUP-2'], ['HOTCUP-3', '']]
 };
