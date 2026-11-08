@@ -1,19 +1,24 @@
 /* STATUS SEAT PLAN A340 — EXPORT TO EXCEL
- * buildSeatWorkbook(ExcelJS, data) returns an ExcelJS workbook with 4 sheets:
- *   ผังที่นั่ง | รวมข้อขัดข้องคงค้าง | ทุกที่นั่ง และ Monitor | ประวัติการแก้ไข
+ * buildSeatWorkbook(ExcelJS, data) returns an ExcelJS workbook with 5 sheets:
+ *   ผังที่นั่ง | Galley และห้องน้ำ | รวมข้อขัดข้องคงค้าง | ทุกที่นั่ง และ Monitor | ประวัติการแก้ไข
  * data = {
  *   state:   { id: {s:0|1|2, m:0|1|2, note:'', by:'', at:ISO} }   id = 'CC', '12E', 'MON-31-L' ...
  *   lastSave:{ by, at:ISO } | null,
  *   inspector: '',
- *   history: [[atISO|text, email, inspector, label, field, oldValue, newValue], ...] | null
+ *   history: [[atISO|text, email, inspector, label, field, oldValue, newValue], ...] | null,
+ *   equip:   { items: [{id, kind:'eq'|'lav', label, group, type, zone}], galleys: [{name, types:[name]}], lavZones: [zone name],
+ *              subs: {G1: {rows:[['STORE-1','CHILLER-1']]}, ...} (table layout per sub-galley), btn: {OVEN:'Oven', ...} (short names) }
+ *            Galley equipment and lavatories (status in state[id].s, 3 levels as E below)
  * }
  * Layout matches the "ผังที่นั่ง" tab of the Google Sheet (two columns per seat).
  */
 (function (root) {
   var S = ['ปกติ', 'ขัดข้อง-ใช้ได้', 'ใช้ไม่ได้'];
   var M = ['จอปกติ', 'จอเสื่อม', 'จอเสีย'];
+  var E = ['ใช้งานได้', 'ใช้งานได้บางส่วน', 'ใช้งานไม่ได้'];
   var C = { GREEN: 'FF00FF00', MGREEN: 'FF8ED873', YEL: 'FFFFFF00', RED: 'FFFF0000', CABIN: 'FFCAEDFB', ROWNO: 'FF6D9EEB',
-    ZONEH: 'FFC1E4F5', TAG: 'FF45B0E1', WHITE: 'FFFFFFFF', BLUE: 'FF00B0F0', GREY: 'FFF2F2F2', MUTED: 'FF566575' };
+    ZONEH: 'FFC1E4F5', TAG: 'FF45B0E1', WHITE: 'FFFFFFFF', BLUE: 'FF00B0F0', GREY: 'FFF2F2F2', MUTED: 'FF566575',
+    GAL: 'FF1EBDD2', LAV: 'FFDDE7FB', EMPTY: 'FFE7ECF1', DOOR: 'FFE1E6EB' };
   var ZN = { MC: 'MISSION COMMANDER', A: 'FIRST CLASS', B: 'BUSINESS CLASS', C: 'PREMIUM ECONOMY', D: 'ECONOMY' };
   var SIDE = { L: 'ซ้าย', C: 'กลาง', R: 'ขวา' };
   var FONT = 'Tahoma';
@@ -84,7 +89,7 @@
     put(3, 14, null, { span: 4, fill: C.YEL, fmt: 'dd/mm/yyyy hh:mm' });
     ws.getRow(2).height = 26; ws.getRow(3).height = 26;
     ws.mergeCells('B4:T4');
-    ws.getCell('B4').value = 'บันทึกสภาพที่นั่งและ Monitor · Export จากหน้าเว็บ ' + thText(new Date()) + ' · เวลาทั้งหมดเป็นเวลาประเทศไทย (TH-LT)';
+    ws.getCell('B4').value = 'บันทึกสภาพที่นั่ง, Monitor, Galley และห้องน้ำ · Export จากหน้าเว็บ ' + thText(new Date()) + ' · เวลาทั้งหมดเป็นเวลาประเทศไทย (TH-LT)';
     ws.getCell('B4').font = font({ size: 8, italic: true }); ws.getCell('B4').alignment = CENTER;
 
     var SUM0 = 5;
@@ -96,7 +101,7 @@
     ws.getRow(SUM0).height = 30;
     ws.getCell('B13').value = 'วิธีใช้'; ws.getCell('B13').font = font({ size: 8, bold: true });
     ws.mergeCells('C13:T13');
-    ws.getCell('C13').value = 'เลือกสภาพจาก dropdown ใต้ตัวอักษรที่นั่งและในช่อง Monitor · พิมพ์รายละเอียดในช่อง NOTE · สีและตารางสรุปเปลี่ยนเอง';
+    ws.getCell('C13').value = 'เลือกสภาพจาก dropdown ใต้ตัวอักษรที่นั่ง, ในช่อง Monitor และใต้ชื่ออุปกรณ์ Galley / ห้องน้ำ · พิมพ์รายละเอียดในช่อง NOTE · สีและตารางสรุปเปลี่ยนเอง';
     ws.getCell('C13').font = font({ size: 8 }); ws.getCell('C13').alignment = { wrapText: true, vertical: 'middle' };
 
     var r = 15, cells = {}, order = [], zrows = {};
@@ -162,27 +167,108 @@
       ws.getRow(r).height = 14; ws.getRow(r + 1).height = 24; r += 2; ws.getRow(r).height = 5; r++;
       zrows[zone] = [zrows[zone] ? zrows[zone][0] : r0, r - 1];
     }
+    /* Galley / lavatory blocks drawn on the map at their places in the cabin (same layout as the web page).
+       Each unit = name (coloured by its status) / status dropdown / NOTE, like a seat. */
+    var eqd0 = data.equip || {}, SUBS = eqd0.subs || {}, BTN = eqd0.btn || {}, eqMap = {}, rowH = {};
+    var XL_ROWS = { G7: [['BOILER-1*2'], ['CM-1', 'CM-2'], ['CM-3', ''], ['OVEN-1', 'OVEN-2'], ['OVEN-3', 'OVEN-4'], ['OVEN-5', 'OVEN-6'], ['HOTCUP-1', 'HOTCUP-2'], ['HOTCUP-3', '']] };
+    function setH(row, h) { rowH[row] = Math.max(rowH[row] || 0, h); }
+    function eqCF(nameRef, statRef) {
+      ws.addConditionalFormatting({ ref: nameRef, rules: [
+        { type: 'expression', priority: 1, formulae: [statRef + '="' + E[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } },
+        { type: 'expression', priority: 2, formulae: [statRef + '="' + E[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } }
+      ] });
+    }
+    function eqUnit(r0, c0, span, id, name, nameFill) {
+      var d = state[id] || {}, sa = col(c0) + (r0 + 1), na = col(c0) + (r0 + 2);
+      put(r0, c0, name, { span: span, font: font({ size: 8, bold: true }), fill: nameFill || C.GREEN });
+      put(r0 + 1, c0, E[d.s | 0], { span: span, font: font({ size: 7 }), fill: C.WHITE, align: { horizontal: 'center', vertical: 'middle', shrinkToFit: true } }); dv(sa, E);
+      put(r0 + 2, c0, d.note || null, { span: span, font: font({ size: 7 }), fill: C.WHITE, align: { wrapText: true, vertical: 'top', horizontal: 'left' } });
+      eqCF(col(c0) + r0 + ':' + col(c0 + span - 1) + r0, '$' + col(c0) + '$' + (r0 + 1));
+      eqMap[id] = { status: sa, note: na };
+      setH(r0, 16); setH(r0 + 1, 14); setH(r0 + 2, 22);
+    }
+    function galleyBlock(r0, c0, span, sk) {
+      var rows = XL_ROWS[sk] || (SUBS[sk] && SUBS[sk].rows) || [];
+      var sp = function (code) { var m = /\*(\d+)$/.exec(code); return m ? +m[1] : 1; };
+      var k = Math.max.apply(null, rows.map(function (rw) { return rw.reduce(function (a, c2) { return a + sp(c2); }, 0); }).concat([1]));
+      var unit = Math.max(1, Math.floor(span / k));
+      var cnt = {}; rows.forEach(function (rw) { rw.forEach(function (c2) { var t = c2.split('-')[0]; if (c2) cnt[t] = (cnt[t] || 0) + 1; }); });
+      put(r0, c0, 'GALLEY ' + sk, { span: span, font: font({ size: 8, bold: true }), fill: C.GAL }); setH(r0, 16);
+      var rr2 = r0 + 1;
+      rows.forEach(function (rw) {
+        var cc2 = c0;
+        rw.forEach(function (code) {
+          var w = sp(code) * unit;
+          if (!code) { put(rr2, cc2, null, { span: w, rows: 3, fill: C.EMPTY }); cc2 += w; return; }
+          var base = code.replace(/\*\d+$/, ''), t = base.split('-')[0], n2 = base.split('-')[1];
+          eqUnit(rr2, cc2, w, sk + '-' + base, (BTN[t] || t) + (cnt[t] > 1 ? ' ' + n2 : ''));
+          cc2 += w;
+        });
+        rr2 += 3;
+      });
+      return rr2 - r0;
+    }
+    function lavBlock(r0, c0, span, n2) { eqUnit(r0, c0, span, 'LAV-' + n2, 'LAV ' + n2 + (span >= 4 ? ' (ห้องน้ำ)' : ''), C.LAV); return 3; }
+    function ccBlock(r0, c0) {
+      put(r0, c0, 'Commander Center', { font: font({ size: 6, bold: true }), fill: C.WHITE }); setH(r0, 16);
+      put(r0 + 1, c0, M[0], { font: font({ size: 7, bold: true }), fill: C.MGREEN }); dv(col(c0) + (r0 + 1), M); setH(r0 + 1, 14);
+      put(r0 + 2, c0, 'CC', { font: font({ size: 11, bold: true }), fill: C.GREEN }); setH(r0 + 2, 22);
+      put(r0 + 3, c0, S[0], { font: font({ size: 7 }), fill: C.WHITE }); dv(col(c0) + (r0 + 3), S); setH(r0 + 3, 14);
+      put(r0 + 4, c0, null, { font: font({ size: 7 }), fill: C.WHITE, align: { wrapText: true, vertical: 'top', horizontal: 'left' } }); setH(r0 + 4, 30);
+      var a = col(c0);
+      ws.addConditionalFormatting({ ref: a + (r0 + 2) + ':' + col(c0 + 1) + (r0 + 2), rules: [
+        { type: 'expression', priority: 1, formulae: ['$' + a + '$' + (r0 + 3) + '="' + S[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } },
+        { type: 'expression', priority: 2, formulae: ['$' + a + '$' + (r0 + 3) + '="' + S[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } }
+      ] });
+      cells.CC = { zone: 'MC', label: 'Commander Center', seat: a + (r0 + 3), mon: a + (r0 + 1), note: a + (r0 + 4) };
+      order.push('CC'); zrows.MC = [r0, r0 + 4];
+      return 5;
+    }
+    /* one band of blocks; entries = [{c, span, stack:[{g}|{lav}|{cc}]}], stacked blocks get a thin gap */
+    function blockRow(entries) {
+      var r0 = r, h = 0;
+      entries.forEach(function (e) {
+        var rr2 = r0;
+        e.stack.forEach(function (x, i) {
+          if (i) { setH(rr2, 5); rr2++; }
+          rr2 += x.g ? galleyBlock(rr2, e.c, e.span, x.g) : x.lav ? lavBlock(rr2, e.c, e.span, x.lav) : ccBlock(rr2, e.c);
+        });
+        h = Math.max(h, rr2 - r0);
+      });
+      for (var i = 0; i < h; i++) if (rowH[r0 + i]) ws.getRow(r0 + i).height = rowH[r0 + i];
+      r = r0 + h; ws.getRow(r).height = 5; r++;
+    }
+    function doorRow(n2) {
+      put(r, 3, '◀ DOOR ' + n2 + 'L', { span: 4, font: font({ size: 8, bold: true, color: { argb: C.MUTED } }), fill: C.DOOR, border: false });
+      for (var cc2 = 7; cc2 <= 16; cc2++) { ws.getCell(r, cc2).fill = fill(C.DOOR); ws.getCell(r, cc2).border = { top: { style: 'dashed', color: { argb: C.MUTED } }, bottom: { style: 'dashed', color: { argb: C.MUTED } } }; }
+      put(r, 17, 'DOOR ' + n2 + 'R ▶', { span: 4, font: font({ size: 8, bold: true, color: { argb: C.MUTED } }), fill: C.DOOR, border: false });
+      ws.getRow(r).height = 16; r++; ws.getRow(r).height = 5; r++;
+    }
     function lay(spec) { var out = []; spec.forEach(function (b) { b[1].split('').forEach(function (lt, i) { out.push([lt, b[0] + 2 * i + b[2]]); }); }); return out; }
     var z0, n;
 
-    z0 = r; zoneHeader('Mission Commander (1 Seat)', 'ZONE MC'); var room0 = r - 1;
-    seatRow('MC', null, [['CC', LEFT]], true, 'Commander Center'); cabin(z0 + 1, r);
-    var med = { style: 'medium', color: { argb: C.MUTED } };
-    for (var rr = room0; rr < r; rr++) for (c = 2; c <= 10; c++) {
-      var b = Object.assign({}, ws.getCell(rr, c).border || {});
-      if (c === 2) b.left = med; if (c === 10) b.right = med; if (rr === room0) b.top = med; if (rr === r - 1) b.bottom = med;
-      ws.getCell(rr, c).border = b;
-    }
-    r++;
+    z0 = r; zoneHeader('Mission Commander (1 Seat)', 'ZONE MC');
+    doorRow('1');
+    blockRow([{ c: 3, span: 2, stack: [{ g: 'G1L' }] }, { c: 8, span: 8, stack: [{ g: 'G1' }] }, { c: 19, span: 2, stack: [{ g: 'G1R' }] }]);
+    blockRow([{ c: 3, span: 2, stack: [{ cc: true }] }, { c: 9, span: 6, stack: [{ g: 'G1A' }] }, { c: 19, span: 2, stack: [{ lav: 'L16' }] }]);
+    cabin(z0 + 1, r); r++;
     z0 = r; zoneHeader('First Class (8 Seats)', 'ZONE A');
     [1, 2].forEach(function (n) { seatRow('A', n, lay([[LEFT, 'A', 0], [MID, 'EF', 2], [RIGHT, 'K', 2]]), true); });
     cabin(z0 + 1, r); r++;
     z0 = r; zoneHeader('Business Class Area (30 Seats)', 'ZONE B');
+    blockRow([{ c: 3, span: 4, stack: [{ g: 'G2L' }] }, { c: 9, span: 6, stack: [{ g: 'G2' }] }, { c: 17, span: 4, stack: [{ g: 'G2R' }] }]);
+    doorRow('2');
+    blockRow([{ c: 3, span: 4, stack: [{ g: 'G2AL' }, { lav: 'L35' }] }, { c: 9, span: 6, stack: [{ g: 'G2A' }] }, { c: 17, span: 4, stack: [{ g: 'G2AR' }, { lav: 'L36' }] }]);
     [11, 12, 14, 15, 16].forEach(function (n) { seatRow('B', n, lay([[LEFT, 'AB', 0], [MID, 'EF', 2], [RIGHT, 'JK', 0]]), true); });
     cabin(z0 + 1, r); r++;
     z0 = r; zoneHeader('Premium Economy Class Area (77 Seats)', 'ZONE C');
     for (n = 31; n <= 41; n++) {
-      if (n === 31 || n === 36) ovhRow('C', n);
+      if (n === 31) ovhRow('C', n);
+      if (n === 36) {
+        blockRow([{ c: 3, span: 4, stack: [{ lav: 'L53' }] }, { c: 8, span: 4, stack: [{ lav: 'L61' }] }, { c: 12, span: 4, stack: [{ lav: 'L62' }] }, { c: 17, span: 4, stack: [{ lav: 'L54' }] }]);
+        doorRow('3');
+        ovhRow('C', n);
+      }
       seatRow('C', n, lay([[LEFT, 'AB', 0], [MID, 'DEF', 1], [RIGHT, 'JK', 0]]), false);
     }
     cabin(z0 + 1, r); r++;
@@ -191,6 +277,9 @@
     [51, 52, 53].forEach(function (n) { seatRow('D', n, lay([[LEFT, 'AB', 0], [MID, 'DEFG', 0], [RIGHT, 'JK', 0]]), false); });
     [54, 55, 56].forEach(function (n) { seatRow('D', n, lay([[LEFT, 'AB', 0], [MID, 'DEF', 1], [RIGHT, 'JK', 0]]), false); });
     seatRow('D', 57, lay([[LEFT, 'AB', 0], [RIGHT, 'JK', 0]]), false);
+    blockRow([{ c: 3, span: 4, stack: [{ lav: 'L73' }] }, { c: 8, span: 8, stack: [{ g: 'G5' }] }, { c: 17, span: 4, stack: [{ lav: 'L74' }] }]);
+    doorRow('4');
+    blockRow([{ c: 3, span: 4, stack: [{ g: 'G6' }] }, { c: 17, span: 4, stack: [{ g: 'G7' }] }]);
     cabin(z0 + 1, r);
     var LAST = r;
 
@@ -199,7 +288,9 @@
       { type: 'cellIs', operator: 'equal', priority: 3, formulae: ['"' + S[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } },
       { type: 'cellIs', operator: 'equal', priority: 4, formulae: ['"' + M[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } },
       { type: 'cellIs', operator: 'equal', priority: 5, formulae: ['"' + S[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } },
-      { type: 'cellIs', operator: 'equal', priority: 6, formulae: ['"' + M[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } }
+      { type: 'cellIs', operator: 'equal', priority: 6, formulae: ['"' + M[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } },
+      { type: 'cellIs', operator: 'equal', priority: 7, formulae: ['"' + E[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } },
+      { type: 'cellIs', operator: 'equal', priority: 8, formulae: ['"' + E[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } }
     ] });
 
     /* summary formulas (with cached results so every viewer shows numbers at once) */
@@ -230,8 +321,90 @@
       if (d.note) ws.getCell(it.note).value = d.note;
     });
 
+    /* Galley and lavatories: summary tables (COUNTIFS over the list below) + the list with a status dropdown */
+    var eqd = data.equip || { items: [], galleys: [], lavZones: [] };
+    var eqItems = eqd.items || [];
+    var g = wb.addWorksheet('Galley และห้องน้ำ', { views: [{ showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+    [30, 18, 18, 18, 40, 22, 20].forEach(function (w, j) { g.getColumn(j + 1).width = w; });
+    function gput(r, c, v, o) {
+      o = o || {}; var cell = g.getCell(r, c);
+      if (v !== undefined && v !== null) cell.value = v;
+      cell.font = o.font || font(); cell.alignment = o.align || CENTER; cell.border = BOX;
+      if (o.fill) cell.fill = fill(o.fill); if (o.fmt) cell.numFmt = o.fmt;
+      return cell;
+    }
+    g.mergeCells('A1:G1'); g.getCell('A1').value = 'สถานภาพ Galley และห้องน้ำ (LAVATORY) A340';
+    g.getCell('A1').font = font({ size: 14, bold: true }); g.getCell('A1').alignment = CENTER; g.getCell('A1').fill = fill(C.TAG); g.getRow(1).height = 28;
+    g.mergeCells('A2:G2'); g.getCell('A2').value = 'แก้สภาพ Galley / ห้องน้ำได้ที่แผ่นงาน "ผังที่นั่ง" (dropdown ใต้ชื่ออุปกรณ์) · รายการและตารางสรุปในแผ่นนี้ดึงค่ามาเอง · Export ' + thText(new Date());
+    g.getCell('A2').font = font({ size: 8, italic: true }); g.getCell('A2').alignment = CENTER;
+    var nGalRows = 0; (eqd.galleys || []).forEach(function (G) { nGalRows += 1 + G.types.length; });
+    var GS = 4, GE = GS + nGalRows + 1;                    /* galley table: header GS, rows, total GE */
+    var LS = GE + 2, LE = LS + (eqd.lavZones || []).length + 1;  /* lav table */
+    var L0 = LE + 2, L1 = L0 + eqItems.length;           /* list header L0, rows L0+1..L1 */
+    var rB = '$B$' + (L0 + 1) + ':$B$' + Math.max(L1, L0 + 1), rC = '$C$' + (L0 + 1) + ':$C$' + Math.max(L1, L0 + 1), rD = '$D$' + (L0 + 1) + ':$D$' + Math.max(L1, L0 + 1);
+    function q(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+    function cnt(f) { var c = { t: 0, s: [0, 0, 0] }; eqItems.forEach(function (it) { if (!f(it)) return; var d = state[it.id] || {}; c.t++; c.s[d.s | 0]++; }); return c; }
+    function sumHeader(r, first) {
+      [first, 'จำนวน', E[0], E[1], E[2]].forEach(function (t, j) { gput(r, j + 1, t, { font: font({ size: 9, bold: true }), fill: [C.ZONEH, C.ZONEH, C.GREEN, C.YEL, C.RED][j] }); });
+      g.getRow(r).height = 22;
+    }
+    function sumRow(r, name, crit, c, o) {
+      o = o || {};
+      gput(r, 1, name, { font: font({ bold: !!o.bold }), align: { vertical: 'middle', horizontal: 'left', indent: o.indent ? 2 : 0 }, fill: o.fill });
+      gput(r, 2, { formula: 'COUNTIFS(' + crit + ')', result: c.t }, { font: font({ bold: !!o.bold }), fill: o.fill });
+      E.forEach(function (t, j) { gput(r, 3 + j, { formula: 'COUNTIFS(' + crit + ',' + rD + ',' + q(t) + ')', result: c.s[j] }, { font: font({ bold: !!o.bold }), fill: o.fill }); });
+    }
+    function totRow(r, rows, c) {
+      gput(r, 1, 'รวม', { font: font({ bold: true }), align: { vertical: 'middle', horizontal: 'left' }, fill: C.GREY });
+      [c.t, c.s[0], c.s[1], c.s[2]].forEach(function (v, j) {
+        var L = col(2 + j); gput(r, 2 + j, { formula: rows.map(function (x) { return L + x; }).join('+') || '0', result: v }, { font: font({ bold: true }), fill: C.GREY });
+      });
+    }
+    sumHeader(GS, 'GALLEY / อุปกรณ์');
+    var rr2 = GS + 1, galHeads = [];
+    (eqd.galleys || []).forEach(function (G) {
+      galHeads.push(rr2);
+      sumRow(rr2++, G.name, rB + ',' + q(G.name), cnt(function (it) { return it.kind === 'eq' && it.group === G.name; }), { bold: true, fill: C.CABIN });
+      G.types.forEach(function (t) {
+        sumRow(rr2++, t, rB + ',' + q(G.name) + ',' + rC + ',' + q(t), cnt(function (it) { return it.kind === 'eq' && it.group === G.name && it.type === t; }), { indent: true });
+      });
+    });
+    totRow(GE, galHeads, cnt(function (it) { return it.kind === 'eq'; }));
+    sumHeader(LS, 'ห้องน้ำ (LAVATORY) · ZONE');
+    var lavRows = [];
+    (eqd.lavZones || []).forEach(function (z, i) {
+      var r = LS + 1 + i; lavRows.push(r);
+      var ids = eqItems.filter(function (it) { return it.kind === 'lav' && it.group === z; }).map(function (it) { return it.label.replace(/^LAV /, ''); });
+      sumRow(r, z + (ids.length ? ' (' + ids.join(', ') + ')' : ''), rB + ',' + q(z) + ',' + rC + ',' + q('LAVATORY'), cnt(function (it) { return it.kind === 'lav' && it.group === z; }));
+    });
+    totRow(LE, lavRows, cnt(function (it) { return it.kind === 'lav'; }));
+    ['รายการ', 'GALLEY / โซน', 'ประเภท', 'สภาพ', 'หมายเหตุ', 'ผู้บันทึกล่าสุด', 'วัน/เวลาล่าสุด (TH-LT)'].forEach(function (t, j) {
+      gput(L0, j + 1, t, { font: font({ size: 9, bold: true }), fill: C.ZONEH });
+    });
+    g.getRow(L0).height = 22;
+    var eqCells = {};
+    eqItems.forEach(function (it, i) {
+      var r = L0 + 1 + i, d = state[it.id] || {};
+      var mp = eqMap[it.id], MS = "'ผังที่นั่ง'!";
+      var stV = mp ? { formula: MS + mp.status, result: E[d.s | 0] } : E[d.s | 0];
+      var ntV = mp ? { formula: 'IF(' + MS + mp.note + '="","",' + MS + mp.note + ')', result: d.note || '' } : (d.note || '');
+      [it.label, it.group, it.type, stV, ntV, d.by || '', d.at ? th(d.at) : ''].forEach(function (v, j) {
+        gput(r, j + 1, v, { align: { horizontal: (j === 0 || j === 4 || j === 5) ? 'left' : 'center', vertical: 'top', wrapText: j === 4 } });
+      });
+      g.getCell(r, 7).numFmt = 'dd/mm/yyyy hh:mm';
+      if (!mp) g.getCell(r, 4).dataValidation = { type: 'list', allowBlank: false, formulae: ['"' + E.join(',') + '"'] };
+      eqCells[it.id] = it;
+    });
+    if (eqItems.length) {
+      g.addConditionalFormatting({ ref: 'D' + (L0 + 1) + ':D' + L1, rules: [
+        { type: 'cellIs', operator: 'equal', priority: 1, formulae: ['"' + E[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } },
+        { type: 'cellIs', operator: 'equal', priority: 2, formulae: ['"' + E[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } }
+      ] });
+      g.autoFilter = 'A' + L0 + ':G' + L1;
+    }
+
     /* list sheets */
-    var HDR = ['ที่นั่ง / จุด', 'ประเภท', 'โซน', 'สภาพที่นั่ง', 'สภาพ Monitor', 'หมายเหตุ', 'ผู้บันทึกล่าสุด', 'วัน/เวลาล่าสุด (TH-LT)'];
+    var HDR = ['ที่นั่ง / จุด', 'ประเภท', 'โซน', 'สภาพที่นั่ง / อุปกรณ์', 'สภาพ Monitor', 'หมายเหตุ', 'ผู้บันทึกล่าสุด', 'วัน/เวลาล่าสุด (TH-LT)'];
     var WID = [30, 10, 20, 16, 14, 44, 24, 20];
     function statusCF(s, end) {
       if (end < 2) return;
@@ -239,7 +412,9 @@
         { type: 'cellIs', operator: 'equal', priority: 1, formulae: ['"' + S[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } },
         { type: 'cellIs', operator: 'equal', priority: 2, formulae: ['"' + M[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } },
         { type: 'cellIs', operator: 'equal', priority: 3, formulae: ['"' + S[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } },
-        { type: 'cellIs', operator: 'equal', priority: 4, formulae: ['"' + M[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } }
+        { type: 'cellIs', operator: 'equal', priority: 4, formulae: ['"' + M[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } },
+        { type: 'cellIs', operator: 'equal', priority: 5, formulae: ['"' + E[1] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.YEL } } } },
+        { type: 'cellIs', operator: 'equal', priority: 6, formulae: ['"' + E[2] + '"'], style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: C.RED } }, font: { color: { argb: 'FFFFFFFF' } } } }
       ] });
     }
     function header(s, titles, widths) {
@@ -254,13 +429,17 @@
       var q = "'ผังที่นั่ง'!";
       ids.forEach(function (id, i) {
         var row = 2 + i, it = cells[id], d = state[id] || {};
-        var vals = [it.label, it.seat ? 'ที่นั่ง' : 'Monitor', ZN[it.zone]];
+        var vals;
+        if (!it) { it = eqCells[id]; vals = [it.label, it.kind === 'eq' ? 'Galley' : 'ห้องน้ำ', it.group, E[d.s | 0], '-', d.note || ''];
+        } else {
+        vals = [it.label, it.seat ? 'ที่นั่ง' : 'Monitor', ZN[it.zone]];
         if (live) {
           vals.push(it.seat ? { formula: q + it.seat, result: S[d.s | 0] } : '-');
           vals.push(it.mon ? { formula: q + it.mon, result: M[d.m | 0] } : '-');
           vals.push({ formula: 'IF(' + q + it.note + '="",""' + ',' + q + it.note + ')', result: d.note || '' });
         } else {
           vals.push(it.seat ? S[d.s | 0] : '-', it.mon ? M[d.m | 0] : '-', d.note || '');
+        }
         }
         vals.push(d.by || '', d.at ? th(d.at) : '');
         vals.forEach(function (v, j) {
@@ -273,7 +452,7 @@
       if (end >= 2) s.autoFilter = 'A1:H' + end;
       return s;
     }
-    var bad = order.filter(function (id) { var d = state[id] || {}; return (d.s | 0) || (d.m | 0) || d.note; });
+    var bad = order.concat(eqItems.map(function (it) { return it.id; })).filter(function (id) { var d = state[id] || {}; return (d.s | 0) || (d.m | 0) || d.note; });
     var sBad = listSheet('รวมข้อขัดข้องคงค้าง', bad, false);
     if (!bad.length) { sBad.getCell('A2').value = 'ไม่มีข้อขัดข้องคงค้าง'; sBad.getCell('A2').font = font(); }
     listSheet('ทุกที่นั่ง และ Monitor', order, true);

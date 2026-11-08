@@ -12,19 +12,19 @@ img{max-width:100%}
 [hidden]{display:none!important}
 /* Layout: sticky status bar, summary table, then the cabin drawn nose-to-tail as four zone panels of tappable seats. */
 :root{
-  --bg:#eef2f6; --panel:#ffffff; --cabin:#dfeaf5; --ink:#14212e; --muted:#566575; --line:#c5d0dc;
+  --bg:#eef2f6; --panel:#ffffff; --cabin:#dfeaf5; --ink:#14212e; --muted:#566575; --line:#c5d0dc; --galley:#1ebdd2; --galley-ink:#06262c; --gline:#8fa3b5; --lavbg:#e6edfb; --lavink:#2c4f9e;
   --accent:#1f5fa8; --accent-ink:#ffffff; --rowno:#35547c;
   --ok:#2e9d57; --ok-soft:#d6f0df; --warn:#e2a400; --warn-soft:#fdf0c4; --bad:#d23b33; --bad-soft:#fbdad7;
   --on-status:#10202b;
   --sans:"IBM Plex Sans Thai","Noto Sans Thai",Tahoma,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a;
+  --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a; --galley:#1792a3; --galley-ink:#041a1e; --gline:#4a5f74; --lavbg:#1d2944; --lavink:#9db8f0;
   --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6;
   --ok:#3fb56c; --ok-soft:#173a26; --warn:#e9b422; --warn-soft:#40330d; --bad:#ea5a52; --bad-soft:#451b19;
   --on-status:#08131f; color-scheme:dark } }
 :root[data-theme="dark"]{
-  --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a;
+  --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a; --galley:#1792a3; --galley-ink:#041a1e; --gline:#4a5f74; --lavbg:#1d2944; --lavink:#9db8f0;
   --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6;
   --ok:#3fb56c; --ok-soft:#173a26; --warn:#e9b422; --warn-soft:#40330d; --bad:#ea5a52; --bad-soft:#451b19;
   --on-status:#08131f; color-scheme:dark }
@@ -65,15 +65,23 @@ th i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:
 .zone header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
 .zone header h2{margin:0}
 .zone header span{font-family:var(--mono);font-size:12px;font-weight:600;background:var(--accent);color:var(--accent-ink);padding:2px 8px;border-radius:4px;white-space:nowrap}
-.rows{--sg:clamp(2px,1vw,6px);--sw:clamp(22px,calc((100vw - 140px)/8),46px);display:flex;flex-direction:column;gap:8px;align-items:center}
-.row{display:flex;align-items:flex-end;gap:clamp(2px,1vw,6px);justify-content:center;width:100%}
-.rowno{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--rowno);width:clamp(18px,5vw,30px);text-align:right;padding-bottom:9px;flex:none}
-.aisle{width:clamp(6px,3vw,26px);flex:none}
+.rows{--sg:clamp(2px,1vw,6px);--sw:clamp(22px,calc((100vw - 140px)/8),46px);--aw:clamp(6px,3vw,26px);--rg:clamp(2px,1vw,6px);--rnw:clamp(18px,5vw,30px);--wl:calc(2*var(--sw) + var(--sg));--wc:calc(4*var(--sw) + 3*var(--sg));display:flex;flex-direction:column;gap:8px;align-items:center}
+.row{display:flex;align-items:flex-end;gap:var(--rg);justify-content:center;width:100%}
+.rowno{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--rowno);width:var(--rnw);text-align:right;padding-bottom:9px;flex:none}
+.aisle{width:var(--aw);flex:none}
+/* fixed slots shared by every zone (Economy grid): A-B left, D-G centre, J-K right */
+.grp.slot{flex:none}
+.grp.slot.s0{width:var(--wl);justify-content:flex-start}
+.grp.slot.s1{width:var(--wc);justify-content:center}
+.grp.slot.s2{width:var(--wl);justify-content:flex-end}
+.lavrow .grp.slot{align-items:stretch}
+.grp.slot.fill .seat{flex:1 1 0;width:auto;min-width:0}
 .gap{flex:none;width:var(--sw)}
 .seat{flex:none;width:var(--sw);padding:0;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;gap:3px;align-items:stretch;position:relative}
 .seat .m{height:6px;border-radius:2px;background:var(--ok);margin-inline:15%}
 .seat .s{height:38px;border-radius:6px 6px 3px 3px;background:var(--ok);color:var(--on-status);font-family:var(--mono);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;border:1px solid transparent}
 .seat:hover .s{border-color:var(--ink)}
+.seat.wide{width:var(--wl)}
 .seat[data-s="1"] .s,.seat[data-m="1"] .m,.ovh[data-m="1"]{background:var(--warn)}
 .seat[data-s="2"] .s,.seat[data-m="2"] .m,.ovh[data-m="2"]{background:var(--bad)}
 .seat[data-s="1"] .s::after{content:"!";margin-left:1px}
@@ -91,7 +99,121 @@ th i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:
 .ovhrow .gap{height:1px}
 .ovh{border:0;cursor:pointer;background:var(--ok);color:var(--on-status);font-size:11px;font-weight:600;border-radius:3px;padding:2px 10px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap}
 .ovh[data-note]::before{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink);border-radius:0 0 3px 3px;pointer-events:none}
-.ro .seat,.ro .ovh{cursor:default}
+.ro .seat,.ro .ovh,.ro .eq,.ro .lav{cursor:default}
+/* galley / lavatory rows drawn between seat rows, laid out like the Excel cabin drawing */
+.fac{width:100%;max-width:560px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr);gap:8px;align-items:start;margin-block:2px}
+.fcell{display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}
+.fcell.f1{align-items:center}
+.fcell.f1:not(:has(.gbox)){flex-direction:row;flex-wrap:wrap;justify-content:center}
+.fcell.f2{align-items:flex-end}
+.fac.wide .fcell.f2{grid-column:2 / span 2}
+.gbox{display:flex;flex-direction:column;border:1px solid var(--gline);border-radius:4px;overflow:hidden;background:var(--gline);gap:1px;max-width:100%;min-width:0}
+.gbox.wide3{width:100%;max-width:330px}
+.agrid{display:grid;justify-content:center;align-items:stretch;column-gap:var(--rg);width:100%;margin-block:2px 6px;
+  grid-template-columns:var(--rnw) calc(var(--nl)*var(--sw) + (var(--nl) - 1)*var(--sg)) var(--aw) calc(var(--nc)*var(--sw) + (var(--nc) - 1)*var(--sg)) var(--aw) calc(var(--nr)*var(--sw) + (var(--nr) - 1)*var(--sg))}
+.agrid .gbox{max-width:none}
+.agrid .gbox .gtab{flex:1;grid-auto-rows:1fr}  /* G6 stretches to G7's length */
+.mg{display:grid;justify-content:center;column-gap:var(--rg);row-gap:4px;width:100%;margin-block:4px 8px}
+.mg>*{grid-column:var(--dc);grid-row:var(--dr);min-width:0}
+.mg .gbox{max-width:none}
+.mg .fixw.fixw{width:var(--gw);justify-self:start}
+.mg .fixw.fixw.fixend{justify-self:end}
+@media (max-width:600px){.mg .gbox.fixw.fixw{width:var(--wl)}}
+.mg .gbox .gtab{flex:1;grid-auto-rows:1fr}
+.mg .gc{font-size:10.5px;padding:3px 2px}
+.gbox.vtext .gc{writing-mode:vertical-rl;transform:rotate(180deg);padding:4px 2px}
+.gbox.vtext .eq.gc{box-shadow:inset -6px 0 0 var(--st);padding:4px 2px}  /* cell is rotated: this lands on the left */
+.gbox.vtext .eq.gc:hover{box-shadow:inset -6px 0 0 var(--st),inset 0 0 0 2px var(--ink)}
+/* right-hand boxes (G1R): label reads top-to-bottom, so the cell text does too */
+.gbox.vr.vtext .gc{transform:none}
+.gbox.vr.vtext .eq.gc{box-shadow:inset 6px 0 0 var(--st)}
+.gbox.vr.vtext .eq.gc:hover{box-shadow:inset 6px 0 0 var(--st),inset 0 0 0 2px var(--ink)}
+.ccroom{justify-self:start;width:var(--sw);display:flex;flex-direction:column;align-items:center;gap:4px;align-self:center;outline:2px solid var(--muted);outline-offset:2px;border-radius:2px;margin:3px 0}
+.cctext{font-size:7.5px;font-weight:700;color:var(--muted);text-align:center;line-height:1.15;letter-spacing:-.2px;width:calc(var(--sw) + 4px)}
+.lav.tall{height:auto;width:100%;flex-direction:column;justify-content:center;gap:3px;padding:6px 2px}
+.lav.tall .lt{align-items:center}
+.lav.tall .lt small{font-size:9px;font-weight:700;font-family:var(--mono)}
+@media (max-width:600px){.cctext{display:none}.mg>*{grid-column:var(--mc,var(--dc));grid-row:var(--mr,var(--dr))}.mg .gc{font-size:9px;padding:2px 1px;min-height:34px}.mg .eq.gc{padding-left:7px}.mg .glab{font-size:9.5px;padding:3px 2px}}
+/* DOOR 2 block, as in the Excel: side columns exactly as wide as seats A-B and J-K, galleys G2 / G2A in between */
+.sblk{display:grid;justify-content:center;column-gap:var(--rg);width:100%;margin-block:2px 6px;
+  grid-template-columns:var(--rnw) var(--wl) var(--aw) var(--wc) var(--aw) var(--wl)}  /* aisles are their own tracks: nothing crosses them */
+.sbc{display:flex;flex-direction:column;gap:4px;min-width:0;grid-row:var(--dr)}
+.sbc>.gbox{flex:1 1 auto}
+.sbL{grid-column:2}.sbC{grid-column:4}.sbR{grid-column:6}
+.sblk{row-gap:4px}
+.sblk .door.sbd{grid-column:2 / 7;grid-row:var(--dr);max-width:none;margin:0;width:auto;left:0}
+.sbC .gbox.wide3{max-width:none}
+.sbC .gc{font-size:10.5px;padding:3px 2px}
+.gbox.vert{flex-direction:row}
+.gbox.vert .glab{writing-mode:vertical-rl;transform:rotate(180deg);padding:6px 3px;white-space:nowrap;font-size:10px;display:flex;align-items:center;justify-content:center}
+.gbox.vr .glab{transform:none}
+.gbox.vert .gtab{flex:1;min-width:0;grid-auto-rows:1fr}
+.gbox.vert .gc{font-size:10.5px;padding:3px 2px}
+.sbc .lav{width:100%;min-height:58px;height:auto;justify-content:center;flex-direction:column;gap:3px;padding:4px 2px}
+@media (max-width:600px){.sblk{row-gap:6px}.sbc,.sblk .door.sbd{grid-row:var(--mr)}.sbC{grid-column:2 / 7}.sbC .gbox.wide3{max-width:420px;align-self:center}}
+.glab{background:var(--galley);color:var(--galley-ink);font-size:11px;font-weight:700;letter-spacing:.04em;text-align:center;padding:4px 6px}
+.gtab{display:grid;gap:1px;background:var(--gline)}
+.gc{min-width:0;min-height:30px;padding:3px 5px;font-size:11.5px;font-weight:700;line-height:1.2;display:flex;align-items:center;justify-content:center;text-align:center}
+.gc.ge{background:var(--panel)}
+.eq.gc{border:0;border-radius:0;height:auto;font-family:var(--sans);white-space:normal}
+.fac:has(+ .row .cclabel.room){margin-bottom:24px}
+/* phone: left and right boxes share the first line, the centre galley gets the full width below */
+@media (max-width:600px){
+  .fac{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:6px}
+  .fcell.f0{grid-column:1;grid-row:1}
+  .fcell.f2{grid-column:2;grid-row:1}
+  .fcell.f1,.fac.wide .fcell.f2{grid-column:1 / -1;grid-row:2;align-items:center}
+  .fcell:empty{display:none}
+  .gbox.wide3{max-width:420px}
+}
+.door{width:calc(2*var(--wl) + var(--wc) + 2*var(--aw) + 4*var(--rg));max-width:100%;position:relative;left:calc((var(--rnw) + var(--rg))/2);display:flex;align-items:center;justify-content:space-between;height:var(--aw);min-height:14px;padding-inline:4px;border-block:1.5px dashed var(--gline);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.05em;line-height:1;white-space:nowrap;margin-block:4px}
+.door i{display:none}
+
+.eq,.lav{border:1px solid transparent;cursor:pointer;background:var(--ok);color:var(--on-status);font-family:var(--mono);font-weight:600;position:relative;padding:0}
+.eq{height:24px;min-width:28px;border-radius:4px;font-size:12px;padding-inline:5px;white-space:nowrap}
+.eq[data-pending]{outline-offset:-3px}
+.lav{height:36px;border-radius:6px;padding:0 9px 0 7px;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,.18)}
+.lav .wc{width:18px;height:18px;flex:none}
+.row.lavrow{align-items:stretch;margin-block:4px}
+.lavgrp{display:flex;gap:var(--sg);flex:none;justify-content:center;align-items:stretch}
+.lavgrp .gbox{flex:1 1 0;min-width:0;max-width:100%}
+.lavgrp .lav{height:auto;min-height:36px;flex:1 1 0;min-width:0;max-width:100%;justify-content:center;padding-inline:4px;gap:4px;overflow:hidden}
+.lavgrp .lav .lt b{white-space:nowrap;overflow:hidden}
+.lavgrp .lav.narrow{padding-inline:2px}
+.lavgrp .lav.narrow .lt{align-items:center}
+.lavgrp .lav.narrow .lt small{font-size:9px;font-weight:700;font-family:var(--mono)}
+@media (max-width:600px){.lavgrp .lav .wc{display:none}.lavgrp .lav .lt b{font-size:10px}}
+.lav .lt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;font-family:var(--sans)}
+.lav .lt b{font-size:11.5px;font-family:var(--mono)}
+.lav .lt small{font-size:10px;font-weight:600;opacity:.85}
+.eq:hover,.lav:hover{border-color:var(--ink)}
+.eq[data-s="1"],.lav[data-s="1"]{background:var(--warn)}
+.eq[data-s="2"],.lav[data-s="2"]{background:var(--bad)}
+.eq[data-s="1"]::after,.lav[data-s="1"]::after{content:"!";margin-left:1px}
+.eq[data-s="2"]::after,.lav[data-s="2"]::after{content:"×";margin-left:1px}
+/* equipment and lavatories look different from seats/monitors (solid status blocks):
+   galley cell = white with a status bar on the left, tinted when faulty; lavatory = pale-blue room with a status frame */
+.eq.gc{--st:var(--ok);background:var(--panel);color:var(--ink);box-shadow:inset 6px 0 0 var(--st);padding-left:9px;font-weight:600}
+.eq.gc[data-s="1"]{--st:var(--warn);background:var(--warn-soft)}
+.eq.gc[data-s="2"]{--st:var(--bad);background:var(--bad-soft)}
+.eq.gc[data-s="1"]::after,.eq.gc[data-s="2"]::after{color:var(--st);font-weight:800;margin-left:3px}
+.eq.gc:hover{box-shadow:inset 6px 0 0 var(--st),inset 0 0 0 2px var(--ink)}
+.gc.ge{background:repeating-linear-gradient(135deg,var(--panel) 0 6px,var(--cabin) 6px 8px)}
+.lav{--st:var(--ok);background:var(--lavbg);color:var(--lavink);border:2px solid var(--st);box-shadow:inset 0 0 0 1px var(--panel)}
+.lav[data-s="1"]{--st:var(--warn);background:var(--warn-soft);color:var(--ink)}
+.lav[data-s="2"]{--st:var(--bad);background:var(--bad-soft);color:var(--ink)}
+.lav[data-s="1"]::after,.lav[data-s="2"]::after{color:var(--st);font-weight:800;margin-left:2px}
+.lav:hover{border-color:var(--st);box-shadow:inset 0 0 0 2px var(--ink)}
+.eq[data-note]::before,.lav[data-note]::before{content:"";position:absolute;left:-1px;right:-1px;bottom:-1px;height:3px;background:var(--ink);border-radius:0 0 3px 3px;pointer-events:none}
+.eq[data-pending],.lav[data-pending]{outline:2px dashed var(--accent);outline-offset:2px}
+.report .eq[data-pending],.report .lav[data-pending]{outline:0}
+.sumgrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.sumgrid{grid-template-columns:minmax(0,1fr)}}
+.sumgrid table{min-width:0}
+.report .sumgrid{grid-template-columns:minmax(0,1fr);gap:4px}
+tr.gh td{background:var(--cabin)}
+td.ind{padding-left:22px;font-weight:400!important}
+td small{font-weight:400;color:var(--muted);font-size:12px}
 
 .defects{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
 .defects ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
@@ -141,6 +263,13 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .pvbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
 .pvbar h3{margin:0}
 .pvbody{overflow:auto;padding:14px;background:#d9dee4}
+.pvtabs{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.pvtab{border:0;background:var(--panel);color:var(--ink);font:inherit;font-size:12px;font-weight:700;padding:7px 12px;cursor:pointer;letter-spacing:.02em}
+.pvtab+.pvtab{border-left:1px solid var(--line)}
+.pvtab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.pvtab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pvpages{display:flex;flex-direction:column;gap:14px;align-items:center;width:max-content;margin-inline:auto}
+.pvpages>.pg{box-shadow:0 1px 6px rgba(0,0,0,.25)}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;max-width:calc(100vw - 32px);transition:opacity .2s,transform .2s;z-index:50}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.bad{background:var(--bad);color:#fff}
@@ -149,6 +278,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .report{
   --bg:#ffffff; --panel:#ffffff; --cabin:#eef4fa; --ink:#14212e; --muted:#566575; --line:#c5d0dc;
   --accent:#1f5fa8; --accent-ink:#ffffff; --ok:#2e9d57; --ok-soft:#d6f0df; --warn:#e2a400; --warn-soft:#fdf0c4; --bad:#d23b33; --bad-soft:#fbdad7; --on-status:#10202b;
+  --galley:#1ebdd2; --galley-ink:#06262c; --gline:#8fa3b5; --lavbg:#e6edfb; --lavink:#2c4f9e;
   background:#fff;color:var(--ink);width:794px;max-width:none;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:14px;font-family:var(--sans)}
 .report .blk{background:#fff}
 .report h1{font-size:20px;margin:0 0 6px}
@@ -158,8 +288,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .report table{min-width:0;border:1px solid var(--line)}
 .report .legend{margin-top:10px}
 .report .nopdf{display:none}
-.report .rows{--sw:50px;--sg:6px}
-.report .aisle{width:48px}
+.report .rows{--sw:50px;--sg:6px;--aw:48px}
 .report .seat[data-pending] .s,.report .ovh[data-pending]{outline:0}
 .report .rdef th,.report .rdef td{text-align:left;vertical-align:top;font-size:12px;padding:6px 8px;font-weight:400;border:1px solid var(--line)}
 .report .rdef th{font-weight:700;color:var(--ink);background:#f2f5f8}
@@ -167,7 +296,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .report .rdef tr:last-child td{font-weight:400}
 .report .rnote{font-size:12px;color:var(--muted);margin:6px 0 0}
 .offscreen{position:fixed;left:-10000px;top:0}
-/* EXPORT TO PDF A4 2PAGE: landscape A4 pages 1070x741px (= 283x196mm). Page 1 seat map + summary, next pages outstanding defects */
+/* EXPORT TO PDF A4 4 PAGES: landscape A4 pages 1070x741px (= 283x196mm). Page 1 seat map + summary, next pages outstanding defects */
 .report.op1{width:1070px;padding:0;gap:9px;--cabin:#f3f6f9}
 .op1 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:2px solid var(--accent);padding-bottom:6px}
 .op1 .top h1{font-size:19px;margin:0;letter-spacing:.5px}
@@ -216,7 +345,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .empty{font-size:11px;color:var(--muted);margin:0}
 .report.op1.pg{height:741px;overflow:hidden}
 .op1 .fill{flex:1}
-/* page 1 of A4 2PAGE: horizontal cabin, nose left */
+/* page 1 of A4 4 PAGES: horizontal cabin, nose left */
 .op1.pg1 .lbody{display:flex;flex-direction:column;gap:8px}
 .op1.pg1 .ldir{display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted);font-weight:600}
 .op1.pg1 .lmap{display:flex;gap:7px;align-items:stretch;justify-content:space-between}
@@ -262,6 +391,61 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .report.op1.pg1 .lsum td.w.nz{background:var(--warn-soft)!important} .report.op1 .lsum td.b.nz{background:var(--bad-soft)!important}
 .op1.pg1 .mdot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .op1.pg1 .lb2 .defsnote{margin-top:8px}
+.op1.pg3 .fuse{display:grid;grid-template-rows:auto 7px auto 7px auto 16px;column-gap:3px;justify-content:space-between;position:relative}
+.op1.pg3 .fbody{grid-row:1 / 6;grid-column:1 / -1;border:2.5px solid #7d8fa3;border-radius:56px 3px 3px 56px / 50% 3px 3px 50%;background:#fbfcfd}  /* round nose on the left only, square tail */
+.op1.pg3 .flane{grid-column:3 / -2;border-radius:3px}
+.op1.pg3 .flR{grid-row:1;background:#fdf0dc;margin-top:6px}
+.op1.pg3 .flC{grid-row:3;background:#eef1f4}
+.op1.pg3 .flL{grid-row:5;background:#e3eefa;margin-bottom:6px}
+.op1.pg3 .faisle{grid-column:3 / -2;align-self:center;border-top:1.5px dashed #9fb0c1}
+.op1.pg3 .fa1{grid-row:2}.op1.pg3 .fa2{grid-row:4}
+.op1.pg3 .flab{grid-column:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1;z-index:1}
+.op1.pg3 .flab b{font-size:9px;color:#1d2b3a}.op1.pg3 .flab span{font-size:6.5px;font-weight:700;letter-spacing:.04em}.op1.pg3 .flab small{font-size:7px;font-weight:700;font-family:var(--mono)}
+.op1.pg3 .flabR{grid-row:1;color:#a45f00}.op1.pg3 .flabC{grid-row:3;color:#566575}.op1.pg3 .flabL{grid-row:5;color:#1f5fa8}
+.op1.pg3 .fnose{grid-column:1;grid-row:1 / 6;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding-left:4px;text-align:center;line-height:1.1;color:#1d2b3a}
+.op1.pg3 .fnose b{font-size:7.5px;margin-top:3px}.op1.pg3 .fnose span{font-size:6.5px;font-weight:700;color:var(--muted)}
+.op1.pg3 .fnose .cw{display:block;width:9px;height:4px;background:#7d8fa3;border-radius:1px}
+.op1.pg3 .ftail{grid-column:-2;grid-row:1 / 6;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 3px 8px 0;text-align:center;line-height:1.1;color:#1d2b3a}
+.op1.pg3 .ftail .ftc{display:flex;flex-direction:column;align-items:center;line-height:1.1}.op1.pg3 .ftail .ftc b{font-size:7.5px}.op1.pg3 .ftail .ftc span{font-size:6px;font-weight:700;color:var(--muted)}
+.op1.pg3 .ftail .ftR{color:#a45f00;font-size:9px}.op1.pg3 .ftail .ftL{color:#1f5fa8;font-size:9px}
+.op1.pg3 .sd{font-style:normal;font-family:var(--sans);font-size:7px;font-weight:800;color:#fff;border-radius:2px;padding:0 3px;margin-left:1px;white-space:nowrap;line-height:11px}
+.op1.pg3 .estk{display:flex;flex-direction:column;gap:3px;align-items:stretch}
+.op1.pg3 .sdR{background:#c77a12}.op1.pg3 .sdL{background:#1f5fa8}.op1.pg3 .sdC{background:#6b7785}
+.op1.pg3 .eb{z-index:1;display:flex;gap:3px;justify-content:center;align-items:center;padding:7px 1px}
+.op1.pg3 .eb>*{flex:none}
+.op1.pg3 .eb{min-width:max-content}
+.op1.pg3 .fseat{z-index:1;margin:6px 0;display:flex;align-items:center;justify-content:center;background:#d9e0e7;border:1px solid #c0cad4;border-radius:4px;min-width:32px;font-family:var(--mono);font-size:8px;font-weight:700;color:#3d4c5c;padding:2px 3px}
+.op1.pg3 .fsR{margin-top:12px}.op1.pg3 .fsL{margin-bottom:12px}
+.op1.pg3 .fsC{flex-direction:column;gap:1px;margin:3px 0;font-family:var(--sans);text-align:center}
+.op1.pg3 .fsC{overflow:hidden;padding:2px 1px}
+.op1.pg3 .fsC b{font-size:5.8px;letter-spacing:-.1px}.op1.pg3 .fsC span{font-size:6.2px;font-weight:600;white-space:nowrap}.op1.pg3 .fsC em{font-style:normal;font-family:var(--mono);font-size:6.5px;white-space:nowrap}.op1.pg3 .fsC small{font-size:5.8px;color:var(--muted);font-weight:500;white-space:nowrap}
+.op1.pg3 .fdoor{grid-row:1 / 6;z-index:2;display:flex;flex-direction:column;align-items:center;font-size:7px;font-weight:800;color:#33475c}
+.op1.pg3 .fdoor i{flex:1;border-left:1.5px dashed #33475c;margin:2px 0}
+.op1.pg3 .fdoor span{background:#33475c;color:#fff;border-radius:2px;padding:1px 3px;line-height:1.2}
+.op1.pg3 .fdoor .dr{margin-top:-4px}.op1.pg3 .fdoor .dl{margin-bottom:-4px}
+.op1.pg3 .fzone{grid-row:6;margin-top:4px;font-size:7.5px;font-weight:700;letter-spacing:.04em;text-align:center;border-top:2px solid;padding-top:2px;color:#33475c;white-space:nowrap;overflow:hidden}
+.op1.pg3 .fzCC{border-color:#7d8fa3}.op1.pg3 .fzA{border-color:#c79a2b}.op1.pg3 .fzB{border-color:#2b6cb0}.op1.pg3 .fzC{border-color:#6b4fb3}.op1.pg3 .fzD{border-color:#2e9d57}
+.op1.pg3 .ecc{display:flex;flex-direction:column;align-items:center;justify-content:center;width:30px;height:26px;border-radius:3px;font-family:var(--mono);font-size:8.5px;font-weight:700;color:#10202b;outline:1.5px solid var(--muted);outline-offset:2px;line-height:1}
+.op1.pg3 .ecc small{font-family:var(--sans);font-size:5px;font-weight:600}
+.op1.pg3 .eb{display:flex;gap:3px;justify-content:center;align-items:center}
+.op1.pg3 .eb.et{align-items:flex-end}.op1.pg3 .eb.ebt{align-items:flex-start}
+.op1.pg3 .ed{display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:30px;font-size:6.5px;font-weight:700;color:var(--muted);text-align:center;line-height:1.1}
+.op1.pg3 .ed i{flex:1;border-left:1.5px dashed var(--gline);margin:3px 0}
+.op1.pg3 .eg{border:1px solid var(--gline);border-radius:3px;background:var(--gline);display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.op1.pg3 .egh{background:var(--galley);color:var(--galley-ink);font-size:7px;font-weight:700;text-align:center;padding:1px 4px;letter-spacing:.03em;white-space:nowrap}
+.op1.pg3 .egt{display:grid;gap:1px;background:var(--gline)}
+.op1.pg3 .ec{font-size:7px;font-weight:600;color:var(--ink);border-left:3px solid;padding:1px 2px;min-width:22px;height:15px;letter-spacing:-.1px;display:flex;align-items:center;justify-content:center;gap:1px;white-space:nowrap;position:relative}
+.op1.pg3 .ec.ee{background:repeating-linear-gradient(135deg,#fff 0 4px,#e3e9ef 4px 5px);border-left:0;min-width:20px}
+.op1.pg3 .ec.nt::after,.op1.pg3 .el.nt::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--ink)}
+.op1.pg3 .el{position:relative;display:flex;align-items:center;justify-content:center;gap:3px;border:2px solid;border-radius:4px;padding:2px 3px;font-family:var(--mono);font-size:7.5px;font-weight:700;color:var(--lavink);white-space:nowrap}
+.op1.pg3 .el .wc{width:9px;height:9px}
+.op1.pg3 .lleg i.lge{background:#fff;border-left:4px solid var(--ok);box-sizing:border-box;width:14px;outline:1px solid var(--gline)}
+.op1.pg3 .lleg i.lgl{background:var(--lavbg);border:2px solid var(--ok);box-sizing:border-box;width:14px}
+.report.op1.pg3 .lsum td .sm{font-weight:400;color:var(--muted);font-size:8.5px}
+.report.op1.pg3 .tmat td.na{color:var(--muted)}
+.op1.pg3 .lbot.e3{display:grid;grid-template-columns:1fr 1.15fr 1.25fr;gap:12px}
+.op1.pg3 .lbot.e3>div{min-width:0}
+.report.op1.pg3 .lsum th,.report.op1.pg3 .lsum td{padding:2.5px 5px}
 .op1 .defsnote{font-size:11px;margin:4px 0 0;padding:6px 8px;background:#eef2f6;border-radius:4px}
 .report.op1.pgd .def th,.report.op1.pgd .def td{font-size:10px;padding:1.5px 5px}
 .op1 .foot{display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:4px}
@@ -278,19 +462,19 @@ dialog.wide[open]{display:flex;flex-direction:column}
 #adminPin{width:150px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);margin-right:6px}
 </style>
 <script src="config.js"></script>
+
 </head>
 <body>
-
 <div class="wrap" id="app">
   <div class="bar">
-    <h1>STATUS SEAT PLAN A340<small>บันทึกสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร</small></h1>
+    <h1>STATUS SEAT PLAN A340<small>บันทึกสภาพที่นั่ง, Monitor, Galley และห้องน้ำ · ฝ่ายการช่าง / ฝ่ายสื่อสาร</small></h1>
     <div class="who"><label for="inspector">ชื่อผู้ตรวจ</label><input id="inspector" maxlength="60" placeholder="พิมพ์ชื่อของคุณ" autocomplete="off"></div>
     <div class="tools">
       <button class="btn" id="bClear" type="button">CLEAR</button>
       <button class="btn" id="bPreview" type="button">PREVIEW</button>
       <button class="btn pri" id="bSave" type="button">SAVE</button>
-      <button class="btn" id="bPdf" type="button">EXPORT TO PDF</button>
-      <button class="btn" id="bPdf2" type="button">EXPORT TO PDF A4 2PAGE</button>
+      <button class="btn" id="bPdf" type="button">EXPORT TO PDF ALL PAGES</button>
+      <button class="btn" id="bPdf2" type="button">EXPORT SUMMARY 4 PAGES</button>
       <button class="btn" id="bXls" type="button">EXPORT TO EXCEL</button>
     </div>
     <div class="status"><span class="pend" id="pend"></span><span id="lastSave"></span></div>
@@ -303,11 +487,24 @@ dialog.wide[open]{display:flex;flex-direction:column}
     <div class="tablebox"><table id="summary"></table></div>
   </section>
 
+  <div class="sumgrid">
+    <section>
+      <h2>สรุป Galley</h2>
+      <div class="tablebox"><table id="galSum"></table></div>
+    </section>
+    <section>
+      <h2>สรุปห้องน้ำ (LAVATORY)</h2>
+      <div class="tablebox"><table id="lavSum"></table></div>
+    </section>
+  </div>
+
   <div class="legend" id="legend">
     <span><i class="sw" style="background:var(--ok)"></i>ใช้งานได้ปกติ</span>
     <span><i class="sw" style="background:var(--warn)"></i>ขัดข้องแต่ใช้ได้ / Manual ได้ (!)</span>
     <span><i class="sw" style="background:var(--bad)"></i>ใช้งานไม่ได้ (×)</span>
     <span><i class="sw mon" style="background:var(--ok)"></i>แถบบนที่นั่ง / ป้าย Monitor = จอ</span>
+    <span><i class="sw" style="background:var(--panel);box-shadow:inset 5px 0 0 var(--ok);border:1px solid var(--gline);width:24px"></i>อุปกรณ์ Galley / Storage: แถบสีด้านซ้าย = สภาพ</span>
+    <span><i class="sw" style="background:var(--lavbg);border:2px solid var(--ok);width:24px;box-sizing:border-box"></i>ห้องน้ำ (LAV): สีกรอบ = สภาพ</span>
     <span><i class="sw" style="background:var(--ok);border-bottom:4px solid var(--ink);box-sizing:border-box"></i>ขีดล่าง = มีหมายเหตุ</span>
     <span class="nopdf"><i class="sw" style="background:var(--ok);outline:2px dashed var(--accent);outline-offset:2px"></i>เส้นประ = แก้ไขแล้ว ยังไม่ SAVE</span>
   </div>
@@ -317,19 +514,19 @@ dialog.wide[open]{display:flex;flex-direction:column}
   <section class="defects">
     <h2>รวมข้อขัดข้องคงค้าง <span id="dcount"></span></h2>
     <ul id="dlist"></ul>
-    <p class="empty" id="dempty">ยังไม่มีรายการ แตะที่นั่งหรือ Monitor ในผังเพื่อบันทึกข้อขัดข้อง</p>
+    <p class="empty" id="dempty">ยังไม่มีรายการ แตะที่นั่ง, Monitor, อุปกรณ์ Galley หรือห้องน้ำในผังเพื่อบันทึกข้อขัดข้อง</p>
   </section>
 
   <div class="foot" id="foot" hidden>
     <button class="btn danger" id="resetBtn" type="button">ล้างข้อมูลทั้งหมดเพื่อเริ่มรอบตรวจใหม่</button>
-    <span id="resetAsk" hidden>ตั้งทุกที่นั่งกลับเป็นปกติและล้างหมายเหตุ (ประวัติยังอยู่) <input id="adminPin" type="password" placeholder="รหัส Admin" autocomplete="off"> <button class="btn danger" id="resetYes" type="button">ยืนยันลบ</button> <button class="btn" id="resetNo" type="button">ยกเลิก</button></span>
+    <span id="resetAsk" hidden>ตั้งทุกที่นั่ง, Galley และห้องน้ำกลับเป็นปกติและล้างหมายเหตุ (ประวัติยังอยู่) <input id="adminPin" type="password" placeholder="รหัส Admin" autocomplete="off"> <button class="btn danger" id="resetYes" type="button">ยืนยันลบ</button> <button class="btn" id="resetNo" type="button">ยกเลิก</button></span>
   </div>
 </div>
 
 <dialog id="dlg">
   <h3 id="dTitle"></h3>
   <p class="sub" id="dSub"></p>
-  <fieldset id="fsSeat"><legend>สภาพที่นั่ง</legend><div class="opts" id="optS"></div></fieldset>
+  <fieldset id="fsSeat"><legend id="lgSeat">สภาพที่นั่ง</legend><div class="opts" id="optS"></div></fieldset>
   <fieldset id="fsMon"><legend>สภาพ Monitor</legend><div class="opts" id="optM"></div></fieldset>
   <fieldset><legend><label for="note">หมายเหตุ / รายละเอียดข้อขัดข้อง</label></legend>
     <textarea id="note" maxlength="500" placeholder="เช่น พนักพิงไม่ล็อค, Legrest INOP, รออะไหล่ P/N …"></textarea></fieldset>
@@ -360,7 +557,11 @@ dialog.wide[open]{display:flex;flex-direction:column}
 <dialog id="pv" class="wide">
   <div class="pvbar">
     <h3>PREVIEW รายงาน</h3>
-    <div class="acts"><button class="btn" id="pvClose" type="button">ปิด</button><button class="btn" id="pvPdf" type="button">EXPORT TO PDF</button><button class="btn" id="pvXls" type="button">EXPORT TO EXCEL</button><button class="btn pri" id="pvSave" type="button">SAVE</button></div>
+    <div class="pvtabs" role="tablist" aria-label="เลือกแบบรายงาน">
+      <button class="pvtab" id="pvTabAll" type="button" role="tab" aria-selected="true">PREVIEW ALL PAGES</button>
+      <button class="pvtab" id="pvTabSum" type="button" role="tab" aria-selected="false">PREVIEW SUMMARY 4 PAGES</button>
+    </div>
+    <div class="acts"><button class="btn" id="pvClose" type="button">ปิด</button><button class="btn" id="pvPdf" type="button">EXPORT TO PDF ALL PAGES</button><button class="btn" id="pvXls" type="button">EXPORT TO EXCEL</button><button class="btn pri" id="pvSave" type="button">SAVE</button></div>
   </div>
   <div class="pvbody" id="pvBody"></div>
 </dialog>
@@ -390,28 +591,69 @@ var $=function(id){return document.getElementById(id)};
 var S_LABEL=['ใช้งานได้ปกติ','มีข้อขัดข้องแต่ใช้งานได้ / Manual ได้','ใช้งานไม่ได้'];
 var M_LABEL=['Monitor ใช้งานได้','Monitor เสื่อมสภาพ','Monitor เสีย'];
 var COL=['var(--ok)','var(--warn)','var(--bad)'];
+/* Galley equipment and lavatories: one status (same 3 levels as the Excel sheet) + note */
+var E_LABEL=['ใช้งานได้','ใช้งานได้บางส่วน','ใช้งานไม่ได้'];
+var E_SHORT=['ปกติ','บางส่วน','ใช้ไม่ได้'];
+/* Galley layout follows the cabin drawing in STATUS_SEAT_PLAN_A340 (17 OCT 2026): sub-galleys, their equipment in drawing order,
+   Counts are what the drawing shows; Storage has a status like the other equipment. */
+var GALLEYS={FWD:{name:'FWD GALLEY'},MID:{name:'MID GALLEY'},AFT:{name:'AFT GALLEY'}};
+var GAL_ORDER=['FWD','MID','AFT'];
+var TYPES={OVEN:'Oven',CM:'Coffee Maker',BOILER:'Boiler',ESP:'Espresso Machine',HOTCUP:'Hot Cup',CHILLER:'Chiller',MW:'Microwave',STORE:'Storage'};
+var TYPE_BTN={OVEN:'Oven',CM:'Coffee Maker',BOILER:'Boiler',ESP:'Espresso',HOTCUP:'Hot Cup',CHILLER:'Chiller',MW:'Micro Wave',STORE:'Storage'};
+var TYPE_ORDER=['OVEN','CM','BOILER','ESP','HOTCUP','CHILLER','MW','STORE'];
+/* each sub-galley is drawn as a table, cell for cell as in the Excel drawing ('' = empty cell, TYPE-n = unit n, TYPE-n*k = cell spanning k columns);
+   foot = the GALLEY label sits under the table (G1A, G2A in the Excel), otherwise above.
+ */
+var SUBS={
+ G1L:{gal:'FWD',rows:[['STORE-1']]},
+ G1R:{gal:'FWD',rows:[['STORE-1']]},
+ G1:{gal:'FWD',rows:[['STORE-1','CHILLER-1']]},
+ G1A:{gal:'FWD',foot:true,rows:[['BOILER-1','CM-1','CM-2'],['ESP-1','OVEN-1','OVEN-2']]},
+ G2L:{gal:'MID',rows:[['CHILLER-1'],['STORE-1']]},
+ G2:{gal:'MID',rows:[['CHILLER-1*3'],['OVEN-1','OVEN-2','STORE-1']]},
+ G2R:{gal:'MID',rows:[['CHILLER-1'],['STORE-1']]},
+ G2AL:{gal:'MID',rows:[['STORE-1']]},
+ G2A:{gal:'MID',foot:true,rows:[['CHILLER-1','','BOILER-1'],['ESP-1','CM-1','CM-2'],['OVEN-1','OVEN-2','MW-1'],['HOTCUP-1','HOTCUP-2','HOTCUP-3']]},
+ G2AR:{gal:'MID',rows:[['STORE-1']]},
+ G5:{gal:'AFT',rows:[['STORE-1']]},
+ G6:{gal:'AFT',rows:[['CHILLER-1'],['STORE-1']]},
+ G7:{gal:'AFT',rows:[['BOILER-1'],['CM-1'],['CM-2'],['CM-3'],['OVEN-1'],['OVEN-2'],['OVEN-3'],['OVEN-4'],['OVEN-5'],['OVEN-6'],['HOTCUP-1'],['HOTCUP-2'],['HOTCUP-3']]}
+};
+function subCells(sk){var o=[];SUBS[sk].rows.forEach(function(r){r.forEach(function(c){var m=/^([A-Z]+)-(\d+)(?:\*\d+)?$/.exec(c);if(m)o.push({type:m[1],n:+m[2]})})});return o}
+function subCount(sk,t){return subCells(sk).filter(function(c){return c.type===t}).length}
+var LAV_ZONE={L16:'A'}; /* LAV L16 sits by DOOR 1 (drawn in the MC panel) and counts as First Class, as in the Excel sheet */
+function galTypes(k){return TYPE_ORDER.filter(function(t){return Object.keys(SUBS).some(function(sk){return SUBS[sk].gal===k&&subCount(sk,t)>0})})}
 function rows(nums,layout,mon){return nums.map(function(n){return {n:n,g:layout,mon:mon}})}
 var ZONES=[
- {key:'CC',name:'MISSION COMMANDER',title:'Mission Commander (1 Seat)',tag:'ZONE MC',items:[{cc:true}]},
+ {key:'CC',name:'MISSION COMMANDER',title:'Mission Commander (1 Seat)',tag:'ZONE MC',
+  items:[{door:'1'},{mgrid:{g:['AB','DEFG','JK'],cells:[
+    {g:'G1L',side:'L',vtext:true,dc:'2',dr:'1',seats:1},
+    {g:'G1',dc:'4',dr:'1'},
+    {g:'G1R',side:'R',vtext:true,dc:'6',dr:'1',seats:1,end:true},
+    {lav:'L16',dc:'6',dr:'2',seats:1,end:true},
+    {cc:true,dc:'2',dr:'2'},
+    {g:'G1A',dc:'4',dr:'2'}]}}]},
  {key:'A',name:'FIRST CLASS',title:'First Class (8 Seats)',tag:'ZONE A',
   items:rows([1,2],['A','','EF','','K'],true)},
  {key:'B',name:'BUSINESS CLASS',title:'Business Class Area (30 Seats)',tag:'ZONE B',
-  items:rows([11,12,14,15,16],['AB','EF','JK'],true)},
+  items:[{side:[{L:[{g:'G2L'}],C:[{g:'G2'}],R:[{g:'G2R'}]},{door:'2'},{L:[{g:'G2AL'},{lav:'L35'}],C:[{g:'G2A'}],R:[{g:'G2AR'},{lav:'L36'}]}],g:['AB','DEFG','JK']}].concat(rows([11,12,14,15,16],['AB','EF','JK'],true))},
  {key:'C',name:'PREMIUM ECONOMY',title:'Premium Economy Class Area (77 Seats)',tag:'ZONE C',
-  items:[{ovh:'31',g:['AB','DEF','JK']}].concat(rows([31,32,33,34,35],['AB','DEF','JK'],false),[{ovh:'36',g:['AB','DEF','JK']}],rows([36,37,38,39,40,41],['AB','DEF','JK'],false))},
+  items:[{ovh:'31',g:['AB','DEF','JK']}].concat(rows([31,32,33,34,35],['AB','DEF','JK'],false),[{fac:[[{lav:'L53'}],[{lav:'L61'},{lav:'L62'}],[{lav:'L54'}]],g:['AB','DEF','JK']},{door:'3'},{ovh:'36',g:['AB','DEF','JK']}],rows([36,37,38,39,40,41],['AB','DEF','JK'],false))},
  {key:'D',name:'ECONOMY',title:'Economy Class Area (49 Seats)',tag:'ZONE D',
-  items:[{ovh:'51',g:['AB','DEFG','JK']}].concat(rows([51,52,53],['AB','DEFG','JK'],false),rows([54,55,56],['AB','DEF_','JK'],false),rows([57],['AB','____','JK'],false))}
+  items:[{ovh:'51',g:['AB','DEFG','JK']}].concat(rows([51,52,53],['AB','DEFG','JK'],false),rows([54,55,56],['AB','DEF_','JK'],false),rows([57],['AB','____','JK'],false),[{fac:[[{lav:'L73'}],[{g:'G5'}],[{lav:'L74'}]],g:['AB','DEFG','JK']},{door:'4'},{agrid:[{g:'G6',side:'L',col:'2 / 4'},{g:'G7',side:'R',col:'5 / 7'}],g:['AB','DEFG','JK']}])}
 ];
-var ITEMS={}; // id -> {zone, seat:bool, mon:bool, label}
+var ITEMS={}; // id -> {zone, seat:bool (has status s), mon:bool, label, kind:'eq'|'lav'|undefined}
+function stLabel(it,v){return (it&&it.kind?E_LABEL:S_LABEL)[v|0]}
 var CFG=window.SEATPLAN_CONFIG||{}, API=String(CFG.API_URL||'').trim();
 var db=null, canWrite=true, cur=null, pick={s:0,m:0}, resetEnabled=false;
+var eqServer=null; /* true when the Apps Script also stores Galley/LAV (tab "Galley และห้องน้ำ"); an older script cannot */
 var pinRequired=null; /* from the server; the PIN is asked on every SAVE and never stored */
 try{localStorage.removeItem('seat-a340-pin')}catch(e){}
 var accessPin=''; /* PIN typed at the entry screen, kept in memory only: reloading the page asks again */
 function apiGet(){return apiPost({action:'load',pin:accessPin})}
 function apiPost(body){return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json()})}
 
-function reg(id,zone,seat,mon,label){ITEMS[id]={zone:zone,seat:seat,mon:mon,label:label}}
+function reg(id,zone,seat,mon,label,kind){ITEMS[id]={zone:zone,seat:seat,mon:mon,label:label};if(kind)ITEMS[id].kind=kind;return ITEMS[id]}
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 
 function build(){
@@ -421,6 +663,11 @@ function build(){
     var sec=el('section','zone'),h=el('header');h.appendChild(el('h2',null,z.title));h.appendChild(el('span',null,z.tag));sec.appendChild(h);
     var box=el('div','rows');
     z.items.forEach(function(it){
+      if(it.door){box.appendChild(doorRow(it.door));return}
+      if(it.side){box.appendChild(sideBlock(z.key,it));return}
+      if(it.agrid){box.appendChild(aisleGrid(it));return}
+      if(it.mgrid){box.appendChild(seatGrid(z.key,it.mgrid));return}
+      if(it.fac){box.appendChild(it.g?lavRow(z.key,it):facRow(z.key,it));return}
       if(it.cc){
         reg('CC','CC',true,true,'Commander Center');
         var r=el('div','row');r.appendChild(el('div','rowno'));
@@ -439,21 +686,22 @@ function build(){
         ['L','C','R'].forEach(function(p,i){
           var id='MON-'+it.ovh+'-'+p;reg(id,z.key,false,true,'Monitor เพดาน หน้าแถว '+it.ovh+' ('+['ซ้าย','กลาง','ขวา'][i]+')');
           if(i)o.appendChild(el('div','aisle'));
-          var g=el('div','grp');it.g[i].split('').forEach(function(){g.appendChild(el('div','gap'))});
+          var g=el('div','grp slot s'+i);g.appendChild(el('div','gap'));
           var b=el('button','ovh','Monitor');b.type='button';b.dataset.id=id;b.setAttribute('aria-label',ITEMS[id].label);g.appendChild(b);o.appendChild(g);
         });
         box.appendChild(o);return;
       }
       var r=el('div','row');r.appendChild(el('div','rowno',String(it.n)));
-      it.g.forEach(function(grp,gi){
-        if(gi)r.appendChild(el('div','aisle'));
-        if(grp===''){return}
-        var g=el('div','grp'),real=grp.replace(/_/g,'').length,n=grp.length;
-        if(real&&real<n)g.style.minWidth='calc('+n+' * var(--sw) + '+(n-1)+' * var(--sg))';
+      /* every zone uses the Economy grid: left slot = A-B, centre slot = D-G, right slot = J-K */
+      it.g.filter(function(grp){return grp!==''}).forEach(function(grp,si){
+        if(si)r.appendChild(el('div','aisle'));
+        var g=el('div','grp slot s'+si),solo=false; /* First Class keeps the normal seat size */
+        /* zones with fewer seats than Economy: seats widen to fill the slot so every aisle lines up with Economy's */
+        if(z.key!=='D'&&z.key!=='A'&&!(z.key==='B'&&si===1)&&grp.replace(/_/g,'').length<(si===1?4:2))g.classList.add('fill');  /* Business E-F keep the normal seat width */
         grp.split('').forEach(function(L){
-          if(L==='_'){if(!real)g.appendChild(el('div','gap'));return}
+          if(L==='_')return;
           var id=it.n+L;reg(id,z.key,true,it.mon,'ที่นั่ง '+id);
-          g.appendChild(seatBtn(id,L,it.mon));
+          g.appendChild(seatBtn(id,L,it.mon,solo?'wide':''));
         });
         r.appendChild(g);
       });
@@ -462,6 +710,106 @@ function build(){
     sec.appendChild(box);host.appendChild(sec);
   });
   host.addEventListener('click',function(e){var b=e.target.closest('[data-id]');if(b)openEditor(b.dataset.id)});
+}
+/* galley / lavatory row: three columns = left side (A-B), centre, right side (J-K), as in the Excel drawing */
+var WC_ICON='<svg class="wc" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 2h5a1 1 0 0 1 1 1v6H5V3a1 1 0 0 1 1-1zm-3 8.5h18a.5.5 0 0 1 .5.5v.5a7 7 0 0 1-5.6 6.86L16.5 22h-9l.9-3.7A7 7 0 0 1 2.5 11.5V11a.5.5 0 0 1 .5-.5z"/></svg>';
+function doorRow(n){var d=el('div','door');d.appendChild(el('span',null,'◀ DOOR '+n+'L'));d.appendChild(el('i'));d.appendChild(el('span',null,'DOOR '+n+'R ▶'));return d}
+function facRow(zkey,it){
+  var r=el('div','fac'+(it.wide?' wide':''));
+  it.fac.forEach(function(cell,ci){
+    var c=el('div','fcell f'+ci);
+    if(it.wide&&ci===1&&!cell.length)return;
+    cell.forEach(function(x){
+      if(x.g)c.appendChild(subBox(x.g));
+      if(x.lav){var id='LAV-'+x.lav;reg(id,LAV_ZONE[x.lav]||zkey,true,false,'LAV '+x.lav,'lav');
+        var b=el('button','lav');b.type='button';b.dataset.id=id;
+        b.innerHTML=WC_ICON+'<span class="lt"><b>LAV '+x.lav+'</b></span>';c.appendChild(b)}
+    });
+    r.appendChild(c);
+  });
+  return r;
+}
+/* lavatory row aligned to the seat columns (it.g = seat groups): each LAV fills, and never exceeds, the width of its seat group */
+function lavRow(zkey,it){
+  var r=el('div','row lavrow');r.appendChild(el('div','rowno'));
+  var k=0;
+  it.g.forEach(function(grp,gi){
+    if(gi)r.appendChild(el('div','aisle'));
+    if(grp==='')return;
+    var n=grp.length,slot=el('div','grp slot s'+k),g=el('div','lavgrp');g.style.width='100%';slot.appendChild(g);  /* fills the slot, as the widened seats do */
+    var list=it.fac[k++]||[],nl=list.filter(function(x){return x.lav}).length;
+    list.forEach(function(x){if(x.g){g.appendChild(subBox(x.g));return}if(!x.lav)return;var id='LAV-'+x.lav;reg(id,LAV_ZONE[x.lav]||zkey,true,false,'LAV '+x.lav,'lav');
+      /* one seat wide: no icon, "LAV" over the number so it stays inside the seat width */
+      var narrow=n/nl<1.5,b=el('button','lav'+(narrow?' narrow':''));b.type='button';b.dataset.id=id;
+      b.innerHTML=narrow?'<span class="lt"><small>LAV</small><b>'+x.lav+'</b></span>':WC_ICON+'<span class="lt"><b>LAV '+x.lav+'</b></span>';g.appendChild(b)});
+    r.appendChild(slot);
+  });
+  return r;
+}
+/* row on the seat grid with the aisles as their own tracks: rowno | left seats | aisle | centre seats | aisle | right seats.
+   Each box takes the grid columns given in col (e.g. G6 = A-B + aisle, G7 = aisle + J-K) */
+/* grid with one track per seat group and per aisle, built from the seat layout (g) of the zone below:
+   track 1 = row number, then groups and aisles in order (A | aisle | aisle | EF | aisle | aisle | K for First Class).
+   Each cell names its tracks: dc/dr on desktop, mc/mr on a phone (falls back to dc/dr). */
+function seatGrid(zkey,m){
+  var cols=['var(--rnw)'];
+  m.g.forEach(function(grp,gi){if(gi)cols.push('var(--aw)');if(grp==='')return;var n=grp.length;cols.push('calc('+n+' * var(--sw) + '+(n-1)+' * var(--sg))')});
+  var r=el('div','mg');r.style.gridTemplateColumns=cols.join(' ');
+  m.cells.forEach(function(x){
+    var c;
+    if(x.cc){reg('CC','CC',true,true,'Commander Center');c=el('div','ccroom');c.appendChild(seatBtn('CC','CC',true,'cc'));c.appendChild(el('span','cctext','Commander Center'))}
+    else if(x.g){c=subBox(x.g,x.side);if(x.vtext)c.classList.add('vtext')}
+    else if(x.lav){var id='LAV-'+x.lav;reg(id,LAV_ZONE[x.lav]||zkey,true,false,'LAV '+x.lav,'lav');
+      c=el('button','lav tall');c.type='button';c.dataset.id=id;c.innerHTML=WC_ICON+'<span class="lt"><small>LAV</small><b>'+x.lav+'</b></span>'}
+    if(x.seats){c.classList.add('fixw');if(x.end)c.classList.add('fixend');c.style.setProperty('--gw','calc('+x.seats+' * var(--sw) + '+(x.seats-1)+' * var(--sg))')}
+    c.style.setProperty('--dc',x.dc);c.style.setProperty('--dr',x.dr);
+    if(x.mc)c.style.setProperty('--mc',x.mc);if(x.mr)c.style.setProperty('--mr',x.mr);
+    r.appendChild(c);
+  });
+  return r;
+}
+function aisleGrid(it){
+  var r=el('div','agrid');
+  r.style.setProperty('--nl',it.g[0].length);r.style.setProperty('--nc',it.g[1].length);r.style.setProperty('--nr',it.g[2].length);
+  it.agrid.forEach(function(x){var b=subBox(x.g,x.side);b.style.gridColumn=x.col;b.style.gridRow='1';r.appendChild(b)});
+  return r;
+}
+/* DOOR 2 area as bands: galleys | door passage (nothing crosses it) | galleys + lavatories.
+   Desktop row = --dr; on a phone the centre galley of each band drops below its side columns (--mr) */
+function sideBlock(zkey,it){
+  var r=el('div','sblk'),dr=1,mr=1;
+  r.style.setProperty('--nl',it.g[0].length);r.style.setProperty('--nc',it.g[1].length);r.style.setProperty('--nr',it.g[2].length);
+  it.side.forEach(function(row){
+    if(row.door){var d=doorRow(row.door);d.classList.add('sbd');d.style.setProperty('--dr',dr);d.style.setProperty('--mr',mr);r.appendChild(d);dr++;mr++;return}
+    ['L','C','R'].forEach(function(k){
+      var c=el('div','sbc sb'+k);c.style.setProperty('--dr',dr);c.style.setProperty('--mr',k==='C'?mr+1:mr);
+      (row[k]||[]).forEach(function(x){
+        if(x.g)c.appendChild(subBox(x.g,k==='C'?null:k));
+        else if(x.lav){var id='LAV-'+x.lav;reg(id,LAV_ZONE[x.lav]||zkey,true,false,'LAV '+x.lav,'lav');
+          var b=el('button','lav');b.type='button';b.dataset.id=id;b.innerHTML=WC_ICON+'<span class="lt"><b>LAV '+x.lav+'</b></span>';c.appendChild(b)}
+      });
+      r.appendChild(c);
+    });
+    dr++;mr+=2;
+  });
+  return r;
+}
+function subBox(sk,side){
+  var S=SUBS[sk],G=GALLEYS[S.gal],box=el('div','gbox');
+  var span=function(c){var m=/\*(\d+)$/.exec(c);return m?+m[1]:1};
+  var cols=Math.max.apply(null,S.rows.map(function(r){return r.reduce(function(a,c){return a+span(c)},0)}));
+  var lab=el('div','glab','GALLEY '+sk);lab.title=G.name;
+  var t=el('div','gtab');t.style.gridTemplateColumns='repeat('+cols+',minmax(0,1fr))';
+  S.rows.forEach(function(r){r.forEach(function(c){
+    if(c===''){t.appendChild(el('span','gc ge'));return}
+    var m=/^([A-Z]+)-(\d+)(?:\*\d+)?$/.exec(c),type=m[1],n=+m[2],num=subCount(sk,type)>1?' '+n:'';
+    var id=sk+'-'+type+'-'+n,it=reg(id,S.gal,true,false,G.name+' · '+sk+' · '+TYPES[type]+num,'eq');it.gal=S.gal;it.sub=sk;it.type=type;it.tname=TYPES[type];
+    var b=el('button','eq gc',TYPE_BTN[type]+num);b.type='button';b.dataset.id=id;if(span(c)>1)b.style.gridColumn='span '+span(c);t.appendChild(b);
+  })});
+  if(side){box.classList.add('vert','v'+side.toLowerCase());if(side==='R'){box.appendChild(t);box.appendChild(lab)}else{box.appendChild(lab);box.appendChild(t)}}
+  else if(S.foot){box.appendChild(t);box.appendChild(lab)}else{box.appendChild(lab);box.appendChild(t)}
+  if(cols>1)box.classList.add('wide3');
+  return box;
 }
 function seatBtn(id,text,mon,extra){
   var b=el('button','seat'+(extra?' '+extra:''));b.type='button';b.dataset.id=id;
@@ -485,6 +833,8 @@ function get(id){var r=norm(saved[id]);if(useSaved||!draft[id])return r;var d=no
 function draftDone(id){var sv=norm(saved[id]),d=norm(draft[id]);return draftFields(id).every(function(f){return d[f]===sv[f]})}
 function pend(id){return !useSaved&&!!draft[id]}
 function pendingIds(){return Object.keys(ITEMS).filter(function(id){return draft[id]})}
+function sendable(id){return !ITEMS[id].kind||eqServer!==false}
+function sendIds(){return pendingIds().filter(sendable)}
 
 function render(){
   Object.keys(ITEMS).forEach(function(id){
@@ -493,14 +843,14 @@ function render(){
     if(it.mon)b.dataset.m=d.m;
     if(d.note)b.dataset.note='1';else delete b.dataset.note;
     if(draft[id])b.dataset.pending='1';else delete b.dataset.pending;
-    var a=it.label+(it.seat?' · '+S_LABEL[d.s]:'')+(it.mon?' · '+M_LABEL[d.m]:'')+(d.note?' · '+d.note:'')+(draft[id]?' · ยังไม่ SAVE':'');
+    var a=it.label+(it.seat?' · '+stLabel(it,d.s):'')+(it.mon?' · '+M_LABEL[d.m]:'')+(d.note?' · '+d.note:'')+(draft[id]?' · ยังไม่ SAVE':'');
     b.setAttribute('aria-label',a);b.title=a;
   });
-  renderSummary();renderDefects();renderTools();
+  renderSummary();renderEqSummary();renderDefects();renderTools();
 }
 function summaryData(){
   var T={};ZONES.forEach(function(z){T[z.key]={t:0,s:[0,0,0],mt:0,m:[0,0,0]}});
-  Object.keys(ITEMS).forEach(function(id){var it=ITEMS[id],d=get(id),z=T[it.zone];
+  Object.keys(ITEMS).forEach(function(id){var it=ITEMS[id],d=get(id),z=T[it.zone];if(it.kind)return;
     if(it.seat){z.t++;z.s[d.s]++} if(it.mon){z.mt++;z.m[d.m]++}});
   var rows=[],sum={t:0,s:[0,0,0],mt:0,m:[0,0,0]};
   ZONES.forEach(function(z){var v=T[z.key];rows.push({name:z.name,v:v});sum.t+=v.t;sum.mt+=v.mt;for(var i=0;i<3;i++){sum.s[i]+=v.s[i];sum.m[i]+=v.m[i]}});
@@ -513,18 +863,37 @@ function summaryHTML(){
   return h+'</tbody>';
 }
 function renderSummary(){$('summary').innerHTML=summaryHTML()}
+/* Galley: one block per galley with a row per equipment type. LAV: one row per seat zone */
+function eqCount(filter){var c={t:0,s:[0,0,0]};Object.keys(ITEMS).forEach(function(id){var it=ITEMS[id];if(!filter(it))return;c.t++;c.s[get(id).s]++});return c}
+function eqHead(first){return '<thead><tr><th>'+first+'</th><th>จำนวน</th><th><i style="background:var(--ok)"></i>ใช้งานได้</th><th><i style="background:var(--warn)"></i>ใช้งานได้บางส่วน</th><th><i style="background:var(--bad)"></i>ใช้งานไม่ได้</th></tr></thead><tbody>'}
+function eqRow(name,c,cls,tdc){return '<tr'+(cls?' class="'+cls+'"':'')+'><td'+(tdc?' class="'+tdc+'"':'')+'>'+name+'</td><td class="n">'+c.t+'</td><td class="n">'+c.s[0]+'</td><td class="n w'+(c.s[1]?' nz':'')+'">'+c.s[1]+'</td><td class="n b'+(c.s[2]?' nz':'')+'">'+c.s[2]+'</td></tr>'}
+function galSumHTML(){
+  var h=eqHead('GALLEY / อุปกรณ์');
+  GAL_ORDER.forEach(function(k){var G=GALLEYS[k];
+    h+=eqRow(G.name,eqCount(function(it){return it.gal===k}),'gh');
+    galTypes(k).forEach(function(t){h+=eqRow(TYPES[t],eqCount(function(it){return it.gal===k&&it.type===t}),'','ind')})});
+  return h+eqRow('รวม',eqCount(function(it){return it.kind==='eq'}))+'</tbody>';
+}
+function lavSumHTML(){
+  var h=eqHead('ZONE');
+  ['A','B','C','D'].forEach(function(z){
+    var ids=Object.keys(ITEMS).filter(function(id){return ITEMS[id].kind==='lav'&&ITEMS[id].zone===z}).map(function(id){return id.slice(4)});
+    h+=eqRow(zoneName(z)+' <small>('+ids.join(', ')+')</small>',eqCount(function(it){return it.kind==='lav'&&it.zone===z}))});
+  return h+eqRow('รวม',eqCount(function(it){return it.kind==='lav'}))+'</tbody>';
+}
+function renderEqSummary(){$('galSum').innerHTML=galSumHTML();$('lavSum').innerHTML=lavSumHTML()}
 function fmt(at){if(!at)return '';var d=new Date(at);if(isNaN(d))return '';
   try{return d.toLocaleString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return d.toISOString().slice(0,16).replace('T',' ')}}
-function zoneName(k){for(var i=0;i<ZONES.length;i++)if(ZONES[i].key===k)return ZONES[i].name;return ''}
+function zoneName(k){if(GALLEYS[k])return GALLEYS[k].name;for(var i=0;i<ZONES.length;i++)if(ZONES[i].key===k)return ZONES[i].name;return ''}
 function defectIds(){return Object.keys(ITEMS).filter(function(id){var d=get(id);return d.s||d.m||d.note})}
 function renderDefects(){
   var ul=$('dlist');ul.textContent='';var ids=defectIds();
   ids.forEach(function(id){var d=get(id),it=ITEMS[id];
     var isMon=id.indexOf('MON-')===0;
-    var li=el('li');li.dataset.id=id;li.appendChild(el('span','id',isMon?'MON':id));
+    var li=el('li');li.dataset.id=id;li.appendChild(el('span','id',isMon?'MON':it.kind==='eq'?'GALLEY':it.kind==='lav'?'LAV':id));
     var body=el('div','txt'),tags=el('div','tags');
-    if(isMon)tags.appendChild(el('span',null,it.label));
-    if(it.seat&&d.s)tags.appendChild(el('span','tag '+(d.s===1?'w':'b'),S_LABEL[d.s]));
+    if(isMon||it.kind)tags.appendChild(el('span',null,it.label));
+    if(it.seat&&d.s)tags.appendChild(el('span','tag '+(d.s===1?'w':'b'),stLabel(it,d.s)));
     if(it.mon&&d.m)tags.appendChild(el('span','tag '+(d.m===1?'w':'b'),M_LABEL[d.m]));
     if(draft[id])tags.appendChild(el('span','tag p','ยังไม่ SAVE'));
     body.appendChild(tags);if(d.note)body.appendChild(el('div',null,d.note));
@@ -557,7 +926,9 @@ function openEditor(id){
   var sv=saved[id]?norm(saved[id]):null;
   $('dSub').textContent=(draft[id]?'มีการแก้ไขที่ยังไม่ SAVE · ':'')+(sv&&sv.at?('SAVE ล่าสุด '+[sv.by,fmt(sv.at)].filter(Boolean).join(' · ')):'ยังไม่มีการบันทึก');
   $('fsSeat').hidden=!it.seat;$('fsMon').hidden=!it.mon;
-  optButtons($('optS'),S_LABEL,'s');optButtons($('optM'),M_LABEL,'m');
+  $('lgSeat').textContent=it.kind==='eq'?'สภาพอุปกรณ์':it.kind==='lav'?'สภาพห้องน้ำ':'สภาพที่นั่ง';
+  $('note').placeholder=it.kind==='eq'?'เช่น ไม่ร้อน, Filter ตัน, CB trip, รออะไหล่ P/N …':it.kind==='lav'?'เช่น ก็อกน้ำไหลไม่หยุด, อ่างล้างมือตัน, Flush ไม่ทำงาน …':'เช่น พนักพิงไม่ล็อค, Legrest INOP, รออะไหล่ P/N …';
+  optButtons($('optS'),it.kind?E_LABEL:S_LABEL,'s');optButtons($('optM'),M_LABEL,'m');
   $('note').value=d.note;$('note').readOnly=!canWrite;$('dErr').hidden=true;
   $('dSave').hidden=!canWrite;$('dCancel').textContent=canWrite?'ยกเลิก':'ปิด';
   showDlg($('dlg'));
@@ -599,7 +970,8 @@ $('bClear').addEventListener('click',function(){
 /* SAVE: write every pending edit to the shared record */
 var saving=false;
 function doSave(){
-  if(saving)return Promise.resolve(false);var ids=pendingIds();if(!ids.length){toast('ไม่มีรายการที่ต้อง SAVE');return Promise.resolve(true)}
+  if(saving)return Promise.resolve(false);var ids=sendIds();
+  if(!ids.length){if(pendingIds().length){toast('Apps Script ยังไม่รองรับ Galley/ห้องน้ำ ผู้ดูแลต้องอัปเดต Code.gs ก่อน (ดู README)',true);return Promise.resolve(false)}toast('ไม่มีรายการที่ต้อง SAVE');return Promise.resolve(true)}
   if(!API){toast('ยังไม่ได้ตั้งค่า API_URL ใน config.js จึง SAVE ไม่ได้',true);return Promise.resolve(false)}
   var by=who.value.trim();if(!by){toast('กรุณาใส่ชื่อผู้ตรวจก่อน SAVE',true);who.focus();return Promise.resolve(false)}
   var pinStep=pinRequired===false?Promise.resolve(''):askPin(ids.length);
@@ -609,10 +981,10 @@ function doSave(){
   });
 }
 function sendSave(pin,by){
-    var ids=pendingIds();if(!ids.length){render();return Promise.resolve(true)}
+    var ids=sendIds();if(!ids.length){render();return Promise.resolve(true)}
     saving=true;$('bSave').disabled=true;$('bSave').textContent='กำลัง SAVE…';
     var changes=ids.map(function(id){var r=get(id),b=baseOf(id);
-      return {id:id,s:r.s,m:r.m,note:r.note,fields:draftFields(id),base:{s:b.s,m:b.m,note:b.note}}});
+      return {id:id,label:ITEMS[id].label,s:r.s,m:r.m,note:r.note,fields:draftFields(id),base:{s:b.s,m:b.m,note:b.note}}});
     return apiPost({action:'save',by:by,pin:pin,changes:changes}).then(function(res){
       if(!res||!res.ok){
         if(res&&res.error==='pin'){pinRequired=true;toast(pin?'รหัสไม่ถูกต้อง กด SAVE แล้วใส่รหัสอีกครั้ง':'ระบบนี้ต้องใส่รหัส กด SAVE อีกครั้ง',true);return false}
@@ -634,6 +1006,8 @@ function sendSave(pin,by){
       persistDraft();if(res.lastSave)lastSave=res.lastSave;
       var nOk=changes.length-Object.keys(hit).length;
       if(conflicts.length){if(nOk)toast('SAVE เรียบร้อย '+nOk+' รายการ');showConflicts(conflicts,pin,by);return false}
+      var left=pendingIds().length;
+      if(left){toast('SAVE เรียบร้อย '+changes.length+' รายการ · Galley/ห้องน้ำ '+left+' รายการยัง SAVE ไม่ได้ จนกว่าจะอัปเดต Apps Script',true);return false}
       toast('SAVE ลง Google Sheet เรียบร้อย '+changes.length+' รายการ');return true;
     },function(){toast('ติดต่อ Google Sheet ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วกด SAVE อีกครั้ง',true);return false})
     .then(function(ok){saving=false;render();load();return ok});
@@ -641,16 +1015,16 @@ function sendSave(pin,by){
 
 /* someone else saved the same field first: let the user pick per field */
 var FIELD_TH={s:'สภาพที่นั่ง',m:'สภาพ Monitor',note:'หมายเหตุ'};
-function fieldText(f,v){return f==='s'?S_LABEL[v|0]:f==='m'?M_LABEL[v|0]:(v||'(ว่าง)')}
+function fieldText(f,v,id){return f==='s'?stLabel(ITEMS[id],v):f==='m'?M_LABEL[v|0]:(v||'(ว่าง)')}
 var cfState=null;
 function showConflicts(list,pin,by){
   cfState={list:list,pin:pin,by:by,pick:{}};
   var host=$('cfList');host.textContent='';
   list.forEach(function(c,i){
     var box=el('div','cfrow');
-    box.appendChild(el('div','cfh',c.label+' · '+FIELD_TH[c.field]));
+    box.appendChild(el('div','cfh',c.label+' · '+(c.field==='s'&&ITEMS[c.id]&&ITEMS[c.id].kind?'สภาพ':FIELD_TH[c.field])));
     var mk=function(k,title,val,meta){var b=el('button','opt');b.type='button';b.dataset.i=i;b.dataset.k=k;
-      var t=el('div','cft');t.appendChild(el('span','cfk',title));t.appendChild(el('b',null,fieldText(c.field,val)));if(meta)t.appendChild(el('span','cfm',meta));
+      var t=el('div','cft');t.appendChild(el('span','cfk',title));t.appendChild(el('b',null,fieldText(c.field,val,c.id)));if(meta)t.appendChild(el('span','cfm',meta));
       b.appendChild(t);b.setAttribute('aria-pressed','false');
       b.addEventListener('click',function(){cfState.pick[i]=k;host.querySelectorAll('button[data-i="'+i+'"]').forEach(function(x){x.setAttribute('aria-pressed',String(x.dataset.k===k))});cfCheck()});
       return b};
@@ -692,11 +1066,13 @@ $('pinDlg').addEventListener('cancel',function(e){e.preventDefault();closePin(nu
 $('bSave').addEventListener('click',function(){doSave()});
 
 /* ---------- report (PREVIEW / PDF) ---------- */
-function stamp(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())}
+/* export file names start with the Thai date and time: YYMMDD HHMM TH-LT (Buddhist year, Thailand time UTC+7), e.g. 691108 1641 TH-LT */
+function stamp(){var t=new Date(Date.now()+7*3600e3),p=function(n){return String(n).padStart(2,'0')};
+  return p((t.getUTCFullYear()+543)%100)+p(t.getUTCMonth()+1)+p(t.getUTCDate())+' '+p(t.getUTCHours())+p(t.getUTCMinutes())+' TH-LT'}
 function reportNode(isPreview){
   var r=el('div','report');if(isPreview)r.dataset.preview='1';
   var h=el('div','blk rhead');
-  h.appendChild(el('h1',null,'STATUS SEAT PLAN A340 · รายงานสภาพที่นั่งและ Monitor'));
+  h.appendChild(el('h1',null,'STATUS SEAT PLAN A340 · รายงานสภาพที่นั่ง, Monitor, Galley และห้องน้ำ'));
   var meta=el('div','rmeta');
   meta.appendChild(el('div',null,'วันที่ออกรายงาน: '+fmt(new Date().toISOString())));
   meta.appendChild(el('div',null,'ผู้ตรวจ: '+(who.value.trim()||'-')));
@@ -708,6 +1084,10 @@ function reportNode(isPreview){
   var t=el('table');t.innerHTML=summaryHTML();h.appendChild(t);
   var lg=$('legend').cloneNode(true);lg.removeAttribute('id');h.appendChild(lg);
   r.appendChild(h);
+  var eh=el('div','blk sumgrid'),g1=el('div'),g2=el('div');
+  g1.appendChild(el('h2',null,'สรุป Galley'));var tg=el('table');tg.innerHTML=galSumHTML();g1.appendChild(tg);
+  g2.appendChild(el('h2',null,'สรุปห้องน้ำ (LAVATORY)'));var tl=el('table');tl.innerHTML=lavSumHTML();g2.appendChild(tl);
+  eh.appendChild(g1);eh.appendChild(g2);r.appendChild(eh);
   $('zones').querySelectorAll('section.zone').forEach(function(z){
     var c=z.cloneNode(true);c.classList.add('blk');c.setAttribute('inert','');c.removeAttribute('id');
     c.querySelectorAll('[data-id]').forEach(function(b){var id=b.dataset.id,it=ITEMS[id],d=get(id);
@@ -719,12 +1099,12 @@ function reportNode(isPreview){
   if(!ids.length)dsec.appendChild(el('p',null,'ไม่มีข้อขัดข้อง'));
   else{
     var dt=el('table','rdef'),th=el('tr');
-    ['ที่นั่ง / จุด','โซน','สภาพที่นั่ง','สภาพ Monitor','หมายเหตุ','ผู้บันทึก · เวลา'].forEach(function(x){th.appendChild(el('th',null,x))});
+    ['ที่นั่ง / จุด','โซน','สภาพที่นั่ง / อุปกรณ์','สภาพ Monitor','หมายเหตุ','ผู้บันทึก · เวลา'].forEach(function(x){th.appendChild(el('th',null,x))});
     var thead=el('thead');thead.appendChild(th);dt.appendChild(thead);var tb=el('tbody');
     ids.forEach(function(id){var d=get(id),it=ITEMS[id],tr=el('tr');
-      tr.appendChild(el('td',null,id.indexOf('MON-')===0?it.label:id+(pend(id)?' *':'')));
+      tr.appendChild(el('td',null,(id.indexOf('MON-')===0||it.kind?it.label:id)+(pend(id)?' *':'')));
       tr.appendChild(el('td',null,zoneName(it.zone)));
-      var s=el('td',null,it.seat?S_LABEL[d.s]:'-');if(it.seat&&d.s)s.className=d.s===1?'w':'b';tr.appendChild(s);
+      var s=el('td',null,it.seat?stLabel(it,d.s):'-');if(it.seat&&d.s)s.className=d.s===1?'w':'b';tr.appendChild(s);
       var m=el('td',null,it.mon?M_LABEL[d.m]:'-');if(it.mon&&d.m)m.className=d.m===1?'w':'b';tr.appendChild(m);
       tr.appendChild(el('td',null,d.note||'-'));
       tr.appendChild(el('td',null,[d.by,fmt(d.at)].filter(Boolean).join(' · ')||'-'));
@@ -735,10 +1115,25 @@ function reportNode(isPreview){
   r.appendChild(dsec);
   return r;
 }
-function openPreview(){
-  useSaved=true;var node;try{node=reportNode(true)}finally{useSaved=false}
-  var host=$('pvBody');host.textContent='';host.appendChild(node);showDlg($('pv'));
+/* PREVIEW has two views: ALL PAGES (the long report) and SUMMARY 4 PAGES (the A4 landscape pages).
+   EXPORT TO PDF inside the preview exports the view that is open. */
+var pvMode='all';
+function renderPreview(){
+  var host=$('pvBody');host.textContent='';
+  $('pvTabAll').setAttribute('aria-selected',String(pvMode==='all'));$('pvTabSum').setAttribute('aria-selected',String(pvMode==='sum'));
+  $('pvPdf').textContent=pvMode==='all'?'EXPORT TO PDF ALL PAGES':'EXPORT SUMMARY 4 PAGES';
+  useSaved=true;
+  try{
+    if(pvMode==='all'){host.appendChild(reportNode(true));return}
+    var box=el('div','pvpages');host.appendChild(box);
+    buildPages(box);   /* built at full size so the defect rows are measured correctly, then scaled to fit */
+    var sc=Math.min(1,(host.clientWidth-28)/1070);if(sc<1)box.style.zoom=String(sc);
+  }finally{useSaved=false}
+  host.scrollTop=0;
 }
+function openPreview(){showDlg($('pv'));renderPreview()}
+$('pvTabAll').addEventListener('click',function(){if(pvMode!=='all'){pvMode='all';renderPreview()}});
+$('pvTabSum').addEventListener('click',function(){if(pvMode!=='sum'){pvMode='sum';renderPreview()}});
 /* before PREVIEW / EXPORT: warn when there are edits not yet SAVEd */
 var warnCb=null;
 function guard(label,fn){
@@ -754,9 +1149,9 @@ $('wSave').addEventListener('click',function(){hideDlg($('warn'));var f=warnCb;w
 $('bPreview').addEventListener('click',function(){guard('PREVIEW',openPreview)});
 $('pvClose').addEventListener('click',function(){hideDlg($('pv'))});
 $('pvSave').addEventListener('click',function(){hideDlg($('pv'));doSave()});
-$('pvPdf').addEventListener('click',function(){exportPdf()});
+$('pvPdf').addEventListener('click',function(){if(pvMode==='all')exportPdf();else exportPdf2()});
 $('pvXls').addEventListener('click',function(){exportXlsx()});
-$('bPdf').addEventListener('click',function(){guard('EXPORT TO PDF',exportPdf)});
+$('bPdf').addEventListener('click',function(){guard('EXPORT TO PDF ALL PAGES',exportPdf)});
 $('bXls').addEventListener('click',function(){guard('EXPORT TO EXCEL',exportXlsx)});
 
 var libs={};
@@ -802,13 +1197,13 @@ function exportPdf(){
       }
       first=false;
     });
-    return offerFile('STATUS_SEAT_PLAN_A340_'+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
+    return offerFile(stamp()+' A340_STATUS_SEAT_PLAN_ALL PAGES.pdf',pdf.output('arraybuffer'),'application/pdf');
   })
   .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){wrap.remove();busy=false});
 }
 
-/* ---------- EXPORT TO PDF A4 2PAGE ---------- */
+/* ---------- EXPORT SUMMARY 4 PAGES (A4 landscape) ---------- */
 function thLT(at){if(!at)return '-';var d=new Date(at);if(isNaN(d))return '-';var t=new Date(d.getTime()+7*3600e3),p=function(n){return String(n).padStart(2,'0')};
   return p(t.getUTCDate())+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][t.getUTCMonth()]+p(t.getUTCFullYear()%100)+' ('+p(t.getUTCHours())+':'+p(t.getUTCMinutes())+' TH-LT)'}
 function pgTop(sub){
@@ -868,7 +1263,7 @@ function mapPage(nDef){
 }
 function defRows(){
   var SS=['ปกติ','ขัดข้อง-ใช้ได้','ใช้ไม่ได้'],MM=['ปกติ','เสื่อม','เสีย'];
-  return defectIds().map(function(id,k){var d=get(id),it=ITEMS[id],tr=el('tr');
+  return defectIds().filter(function(id){return !ITEMS[id].kind}).map(function(id,k){var d=get(id),it=ITEMS[id],tr=el('tr');
     tr.appendChild(el('td','n',String(k+1)));
     tr.appendChild(el('td','id',id==='CC'?'CC (Commander Center)':(id.indexOf('MON-')===0?it.label:id)));
     tr.appendChild(el('td','nw',zoneName(it.zone)));
@@ -878,27 +1273,136 @@ function defRows(){
     tr.appendChild(el('td','nw',[d.by,d.at?thLT(d.at).replace(' TH-LT',''):''].filter(Boolean).join(' · ')||'-'));
     return tr});
 }
-function defPage(total){
-  var r=el('div','report op1 pg pgd');r.appendChild(pgTop('รวมข้อขัดข้องคงค้าง · ต่อจากหน้า 1'));
-  var ds=el('div');ds.appendChild(el('h3',null,'รวมข้อขัดข้องคงค้าง ('+total+' รายการ)'));
+/* Galley equipment and lavatory defects (pages after the equipment map) */
+function eqDefRows(){
+  return defectIds().filter(function(id){return ITEMS[id].kind}).map(function(id,k){var d=get(id),it=ITEMS[id],tr=el('tr');
+    tr.appendChild(el('td','n',String(k+1)));
+    tr.appendChild(el('td','id',it.kind==='lav'?it.label:it.sub+' · '+it.tname+(id.slice(-2)!=='-1'||subCount(it.sub,it.type)>1?' '+id.split('-').pop():'')));
+    tr.appendChild(el('td','nw',it.kind==='lav'?'ห้องน้ำ · '+zoneName(it.zone):GALLEYS[it.gal].name));
+    tr.appendChild(el('td','nw'+(d.s?(d.s===1?' w':' b'):''),E_LABEL[d.s]));
+    tr.appendChild(el('td',null,d.note||'-'));
+    tr.appendChild(el('td','nw',[d.by,d.at?thLT(d.at).replace(' TH-LT',''):''].filter(Boolean).join(' · ')||'-'));
+    return tr});
+}
+function defPage(total,eq,fromPage){
+  var r=el('div','report op1 pg pgd');
+  r.appendChild(pgTop(eq?'รวมข้อขัดข้องคงค้าง Galley และห้องน้ำ · ต่อจากหน้า '+fromPage:'รวมข้อขัดข้องคงค้าง · ต่อจากหน้า 1'));
+  var ds=el('div');ds.appendChild(el('h3',null,(eq?'รวมข้อขัดข้องคงค้าง Galley และห้องน้ำ (':'รวมข้อขัดข้องคงค้าง (')+total+' รายการ)'));
   var dt=el('table','def'),hr=el('tr');
-  ['#','ที่นั่ง / จุด','โซน','ที่นั่ง','Monitor','หมายเหตุ','ผู้บันทึก · เวลา'].forEach(function(x){hr.appendChild(el('th',null,x))});
+  (eq?['#','อุปกรณ์ / ห้องน้ำ','GALLEY / โซน','สภาพ','หมายเหตุ','ผู้บันทึก · เวลา']:['#','ที่นั่ง / จุด','โซน','ที่นั่ง','Monitor','หมายเหตุ','ผู้บันทึก · เวลา']).forEach(function(x){hr.appendChild(el('th',null,x))});
   var th=el('thead');th.appendChild(hr);dt.appendChild(th);var tb=el('tbody');dt.appendChild(tb);ds.appendChild(dt);r.appendChild(ds);
   r.appendChild(el('div','fill'));r.appendChild(pgFoot());r._tb=tb;return r;
 }
-/* builds every page inside host (must be in the DOM so rows can be measured) */
-function buildPages(host){
-  var rows=defRows(),pages=[mapPage(rows.length)];host.appendChild(pages[0]);
+/* equipment page: the galleys and lavatories drawn along the cabin (nose left, right side J-K on top, as on page 1),
+   one panel per door area, then summaries */
+/* the whole cabin as one fuselage, nose left -> tail right; each segment is a door, a galley/lavatory area or a block of seat rows.
+   Areas: t = right side (J-K), m = centre, b = left side (A-B) - same orientation as page 1 */
+var EQ_CABIN=[
+ {door:'1',z:'CC'},
+ {z:'CC',t:['G1R','L16'],m:['G1','G1A'],b:['G1L','CC']},
+ {z:'A',seat:'FIRST',rows:'1–2',n:8,R:'K',C:'E F',L:'A'},
+ {z:'B',t:['G2R'],m:['G2'],b:['G2L']},
+ {door:'2',z:'B'},
+ {z:'B',t:['G2AR','L36'],m:['G2A'],b:['G2AL','L35']},
+ {z:'B',seat:'BUSINESS',rows:'11–16',n:30,R:'J K',C:'E F',L:'A B'},
+ {z:'C',seat:'PREMIUM',rows:'31–35',n:35,R:'J K',C:'D E F',L:'A B'},
+ {z:'C',t:['L54'],m:[['L62','L61']],b:['L53']},  /* centre pair stacked: L62 = right half (top), L61 = left half (bottom) */
+ {door:'3',z:'C'},
+ {z:'C',seat:'PREMIUM',rows:'36–41',n:42,R:'J K',C:'D E F',L:'A B'},
+ {z:'D',seat:'ECONOMY',rows:'51–57',n:49,R:'J K',C:'D E F G',L:'A B'},
+ {z:'D',t:['L74'],m:['G5'],b:['L73']},
+ {door:'4',z:'D'},
+ {z:'D',t:['G7'],m:[],b:['G6']}
+];
+var EQ_ZONE_LABEL={CC:'MISSION COMMANDER',A:'FIRST',B:'BUSINESS',C:'PREMIUM ECONOMY',D:'ECONOMY'};
+/* G7 is one long column in the cabin; on the A4 page it is folded by equipment type so it fits */
+var EQ_PDF_ROWS={G7:[['BOILER-1*3'],['CM-1','CM-2','CM-3'],['OVEN-1','OVEN-2','OVEN-3'],['OVEN-4','OVEN-5','OVEN-6'],['HOTCUP-1','HOTCUP-2','HOTCUP-3']]};
+var EQ_SHORT={OVEN:'Oven',CM:'CM',BOILER:'Boiler',ESP:'ESP',HOTCUP:'HC',CHILLER:'Chiller',MW:'MW',STORE:'Storage'};
+function eqMapPage(nDef,defFrom){
+  var r=el('div','report op1 pg pg1 pg3');r.appendChild(pgTop('รายงานสภาพ Galley และห้องน้ำ (LAVATORY) · ฝ่ายการช่าง'));
+  var C=['var(--ok)','var(--warn)','var(--bad)'],T=['var(--panel)','var(--warn-soft)','var(--bad-soft)'],SFX=['','!','×'];
+  var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  /* one cell per table position, same rows as on screen ('' = empty cell, TYPE-n*k = spans k columns) */
+  var cellHTML=function(k,code){
+    var sp=/\*(\d+)$/.exec(code),span=sp?' style="grid-column:span '+sp[1]+'"':'';
+    if(code==='')return '<div class="ec ee"></div>';
+    var id=k+'-'+code.replace(/\*\d+$/,''),it=ITEMS[id],d=get(id),n=id.split('-').pop(),lab=EQ_SHORT[it.type]+(subCount(it.sub,it.type)>1?' '+n:'');
+    return '<div class="ec'+(d.note?' nt':'')+'" style="border-left-color:'+C[d.s]+';background:'+T[d.s]+(sp?';grid-column:span '+sp[1]:'')+'">'+esc(lab)+(d.s?'<b style="color:'+C[d.s]+'">'+SFX[d.s]+'</b>':'')+'</div>'};
+  var SIDE={t:'<i class="sd sdR">R</i>',m:'<i class="sd sdC">C</i>',b:'<i class="sd sdL">L</i>',mR:'<i class="sd sdR">C·R</i>',mL:'<i class="sd sdL">C·L</i>'};  /* lane colour + letter: R right, C centre, L left */
+  var block=function(k,lane){
+    if(Array.isArray(k))return '<div class="estk">'+block(k[0],'mR')+block(k[1],'mL')+'</div>';  /* centre pair: right half over left half */
+    if(k==='CC'){var d=get('CC');return '<div class="ecc" style="background:'+C[d.s]+'">CC'+(d.s?SFX[d.s]:'')+'<small>Commander</small></div>'}
+    if(/^L\d+$/.test(k)){var id='LAV-'+k,d=get(id);
+      return '<div class="el'+(d.note?' nt':'')+'" style="border-color:'+C[d.s]+';background:'+(d.s?T[d.s]:'var(--lavbg)')+'">'+WC_ICON+'<span>LAV '+k+(d.s?' <b style="color:'+C[d.s]+'">'+SFX[d.s]+'</b>':'')+'</span>'+(SIDE[lane]||'')+'</div>'}
+    var rows=EQ_PDF_ROWS[k]||SUBS[k].rows;
+    var cols=Math.max.apply(null,rows.map(function(r){return r.reduce(function(a,c){var m=/\*(\d+)$/.exec(c);return a+(m?+m[1]:1)},0)}));
+    var cells=rows.map(function(r){return r.map(function(c){return cellHTML(k,c)}).join('')}).join('');
+    return '<div class="eg"'+(k==='G6'?' style="width:100%"':'')+'><div class="egh">GALLEY '+k+'</div><div class="egt" style="grid-template-columns:repeat('+cols+',auto)">'+cells+'</div></div>'};
+  var band=function(list,cls){return '<div class="eb '+cls+'">'+(list||[]).map(block).join('')+'</div>'};
+  /* three lanes along the whole aircraft: row 1 = right side (J-K), row 3 = centre, row 5 = left side (A-B); rows 2 and 4 = aisles */
+  var html='<div class="ldir"><span>◀ หัวเครื่อง (NOSE)</span><span>มองจากด้านบน · แถบส้ม = ฝั่งขวา R (J-K) · แถบเทา = กลางลำ · แถบฟ้า = ฝั่งซ้าย L (A-B)</span><span>ท้ายเครื่อง (TAIL) ▶</span></div>';
+  var cols=['26px','44px'],segs='',zones='',ci=3,LANE={t:1,m:3,b:5};
+  EQ_CABIN.forEach(function(S){
+    var c=ci++;
+    if(S.door){cols.push('14px');segs+='<div class="fdoor" style="grid-column:'+c+'"><span class="dr">'+S.door+'R</span><i></i><span class="dl">'+S.door+'L</span></div>';return}
+    cols.push('auto');
+    if(S.seat){
+      segs+='<div class="fseat fsR" style="grid-column:'+c+';grid-row:1">'+S.R+'</div>'+
+        '<div class="fseat fsC" style="grid-column:'+c+';grid-row:3"><b>'+S.seat+'</b><span>แถว '+S.rows+'</span><em>'+S.C+'</em><small>'+S.n+' ที่นั่ง</small></div>'+
+        '<div class="fseat fsL" style="grid-column:'+c+';grid-row:5">'+S.L+'</div>';
+      return;
+    }
+    ['t','m','b'].forEach(function(k){segs+='<div class="eb" style="grid-column:'+c+';grid-row:'+LANE[k]+'">'+(S[k]||[]).map(function(x){return block(x,k)}).join('')+'</div>'});
+  });
+  cols.push('24px');
+  var z0=null,start=3;
+  EQ_CABIN.concat([{z:null}]).forEach(function(S,i){
+    if(S.z!==z0){if(z0)zones+='<div class="fzone fz'+z0+'" style="grid-column:'+start+' / '+(i+3)+'">'+EQ_ZONE_LABEL[z0]+'</div>';z0=S.z;start=i+3}
+  });
+  html+='<div class="fuse" style="grid-template-columns:'+cols.join(' ')+'">'+
+    '<div class="fbody"></div><div class="flane flR"></div><div class="faisle fa1"></div><div class="flane flC"></div><div class="faisle fa2"></div><div class="flane flL"></div>'+
+    '<div class="flab flabR"><b>ฝั่งขวา</b><span>RIGHT · R</span><small>J – K</small></div>'+
+    '<div class="flab flabC"><b>กลางลำ</b><span>CENTRE</span></div>'+
+    '<div class="flab flabL"><b>ฝั่งซ้าย</b><span>LEFT · L</span><small>A – B</small></div>'+
+    '<div class="fnose"><i class="cw"></i><i class="cw"></i><b>หัว<br>เครื่อง</b><span>NOSE</span></div>'+
+    '<div class="ftail"><b class="ftR">R</b><div class="ftc"><b>ท้าย</b><span>TAIL</span></div><b class="ftL">L</b></div>'+segs+zones;
+  html+='</div><div class="lleg"><span><i style="background:var(--ok)"></i>ใช้งานได้</span><span><i style="background:var(--warn)"></i>ใช้งานได้บางส่วน (!)</span><span><i style="background:var(--bad)"></i>ใช้งานไม่ได้ (×)</span><span><i class="lge"></i>แถบซ้าย = สภาพอุปกรณ์</span><span><i class="lgl"></i>กรอบ = สภาพห้องน้ำ · R ขวา / L ซ้าย / C·R กลางค่อนขวา / C·L กลางค่อนซ้าย</span><span><i class="lgn"></i>ขีดล่าง = มีหมายเหตุ</span><span>CM = Coffee Maker · HC = Hot Cup · ESP = Espresso · MW = Microwave</span></div>';
+  /* summaries: by galley, by lavatory zone, by equipment type */
+  var cell=function(v,c){return '<td class="'+(v?c+' nz':'')+'">'+v+'</td>'};
+  var row=function(name,c){return '<tr><td>'+name+'</td><td>'+c.t+'</td><td>'+c.s[0]+'</td>'+cell(c.s[1],'w')+cell(c.s[2],'b')+'</tr>'};
+  var head=function(first){return '<thead><tr><th>'+first+'</th><th>จำนวน</th><th><i style="background:var(--ok)"></i>ใช้งานได้</th><th><i style="background:var(--warn)"></i>บางส่วน</th><th><i style="background:var(--bad)"></i>ใช้ไม่ได้</th></tr></thead><tbody>'};
+  var gsum='<table class="lsum">'+head('GALLEY')+GAL_ORDER.map(function(k){return row(GALLEYS[k].name,eqCount(function(it){return it.gal===k}))}).join('')+row('รวม',eqCount(function(it){return it.kind==='eq'}))+'</tbody></table>';
+  var lsum='<table class="lsum">'+head('ห้องน้ำ · ZONE')+['A','B','C','D'].map(function(z){var ids=Object.keys(ITEMS).filter(function(id){return ITEMS[id].kind==='lav'&&ITEMS[id].zone===z}).map(function(id){return id.slice(4)});
+    return row(zoneName(z)+' <span class="sm">('+ids.join(', ')+')</span>',eqCount(function(it){return it.kind==='lav'&&it.zone===z}))}).join('')+row('รวม',eqCount(function(it){return it.kind==='lav'}))+'</tbody></table>';
+  var tsum='<table class="lsum tmat"><thead><tr><th>ชนิดอุปกรณ์</th>'+GAL_ORDER.map(function(k){return '<th>'+k+'</th>'}).join('')+'<th>รวม</th><th><i style="background:var(--warn)"></i>บางส่วน</th><th><i style="background:var(--bad)"></i>ใช้ไม่ได้</th></tr></thead><tbody>'+
+    TYPE_ORDER.map(function(t){var all=eqCount(function(it){return it.type===t});
+      return '<tr><td>'+TYPES[t]+'</td>'+GAL_ORDER.map(function(k){var c=eqCount(function(it){return it.gal===k&&it.type===t});return c.t?'<td class="'+(c.s[2]?'b nz':c.s[1]?'w nz':'')+'">'+c.s[0]+'/'+c.t+'</td>':'<td class="na">-</td>'}).join('')+
+        '<td>'+all.t+'</td>'+cell(all.s[1],'w')+cell(all.s[2],'b')+'</tr>'}).join('')+'</tbody></table>';
+  html+='<div class="lbot e3"><div class="eb1"><h3>สรุปตาม Galley</h3>'+gsum+'</div><div class="eb2"><h3>สรุปห้องน้ำตามโซน</h3>'+lsum+'</div><div class="eb3"><h3>สรุปตามชนิดอุปกรณ์ (ใช้งานได้ / ทั้งหมด)</h3>'+tsum+
+    '<p class="defsnote">'+(nDef?'<b>ข้อขัดข้องคงค้าง Galley และห้องน้ำ '+nDef+' รายการ</b> · รายละเอียดอยู่หน้า '+defFrom:'<b>ไม่มีข้อขัดข้องคงค้างของ Galley และห้องน้ำ</b>')+'</p></div></div>';
+  var b=el('div','lbody');b.innerHTML=html;r.appendChild(b);
+  r.appendChild(el('div','fill'));r.appendChild(pgFoot());return r;
+}
+/* fills defect rows into as many pages as needed (rows that do not fit move to the next page) */
+function fillDefPages(host,pages,rows,eq,fromPage){
   var i=0;
   while(i<rows.length){
-    var pg=defPage(rows.length);host.appendChild(pg);pages.push(pg);
+    var pg=defPage(rows.length,eq,fromPage);host.appendChild(pg);pages.push(pg);
     var fill=pg.querySelector('.fill'),placed=0;
     while(i<rows.length){
       pg._tb.appendChild(rows[i]);
-      if(fill.getBoundingClientRect().height<1&&placed>0){pg._tb.removeChild(rows[i]);break} /* page full: move this row to the next page */
+      if(fill.getBoundingClientRect().height<1&&placed>0){pg._tb.removeChild(rows[i]);break}
       placed++;i++;
     }
   }
+}
+/* builds every page inside host (must be in the DOM so rows can be measured):
+   1 seat map · 2.. seat/monitor defects · then equipment map · then equipment defects */
+function buildPages(host){
+  var rows=defRows(),pages=[mapPage(rows.length)];host.appendChild(pages[0]);
+  fillDefPages(host,pages,rows,false,1);
+  var erows=eqDefRows(),mapNo=pages.length+1,ep=eqMapPage(erows.length,mapNo+1);host.appendChild(ep);pages.push(ep);
+  fillDefPages(host,pages,erows,true,mapNo);
   pages.forEach(function(p,k){p.querySelector('.pgno').textContent='STATUS SEAT PLAN A340 · หน้า '+(k+1)+'/'+pages.length});
   return pages;
 }
@@ -915,12 +1419,12 @@ function exportPdf2(){
     var M=7,W=297-2*M,H=210-2*M;
     cvs.forEach(function(cv,k){if(k)pdf.addPage();var w=W,h=cv.height*W/cv.width;if(h>H){w=w*H/h;h=H}
       pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',M+(W-w)/2,M,w,h)});
-    return offerFile('A4 2P STATUS_SEAT_PLAN_A340_'+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
+    return offerFile(stamp()+' A340_STATUS_SEAT_PLAN_SUMMARY_4PAGES.pdf',pdf.output('arraybuffer'),'application/pdf');
   })
   .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){wrap.remove();busy=false});
 }
-$('bPdf2').addEventListener('click',function(){guard('EXPORT TO PDF A4 2PAGE',exportPdf2)});
+$('bPdf2').addEventListener('click',function(){guard('EXPORT SUMMARY 4 PAGES',exportPdf2)});
 
 function exportXlsx(){
   if(busy)return;busy=true;toast('กำลังสร้าง Excel…'+exportNote());
@@ -928,10 +1432,14 @@ function exportXlsx(){
   var hist=API?apiPost({action:'history',pin:accessPin}).then(function(r){return r&&r.ok?r.rows:null},function(){return null}):Promise.resolve(null);
   Promise.all([loadLib('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'),loadLib('export-excel.js'),hist]).then(function(res){
     var st={};Object.keys(ITEMS).forEach(function(id){st[id]=norm(saved[id])});
-    var wb=window.buildSeatWorkbook(window.ExcelJS,{state:st,lastSave:lastSave,inspector:who.value.trim(),history:res[2]});
+    var eq=Object.keys(ITEMS).filter(function(id){return ITEMS[id].kind}).map(function(id){var it=ITEMS[id];
+      return {id:id,kind:it.kind,label:it.label,group:it.kind==='eq'?GALLEYS[it.gal].name:zoneName(it.zone),type:it.kind==='eq'?it.tname:'LAVATORY',zone:it.zone}});
+    var wb=window.buildSeatWorkbook(window.ExcelJS,{state:st,lastSave:lastSave,inspector:who.value.trim(),history:res[2],
+      equip:{items:eq,galleys:GAL_ORDER.map(function(k){return {name:GALLEYS[k].name,types:galTypes(k).map(function(t){return TYPES[t]})}}),
+        lavZones:['A','B','C','D'].map(function(z){return zoneName(z)}),subs:SUBS,btn:TYPE_BTN}});
     return wb.xlsx.writeBuffer();
   }).then(function(buf){
-    return offerFile('STATUS_SEAT_PLAN_A340_'+stamp()+'.xlsx',buf,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    return offerFile(stamp()+' A340_STATUS_SEAT_PLAN.xlsx',buf,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   })
   .catch(function(){toast('สร้าง Excel ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){busy=false});
@@ -971,6 +1479,9 @@ function load(){
     hideGate();
     var s2={};Object.keys(res.seats||{}).forEach(function(id){if(ITEMS[id])s2[id]=res.seats[id]});
     saved=s2;lastSave=res.lastSave||null;resetEnabled=!!res.resetEnabled;pinRequired=!!res.pinRequired;$('foot').hidden=!resetEnabled;
+    eqServer=!!res.equip;
+    if(!eqServer&&canWrite){var nt=$('notice');nt.hidden=false;nt.textContent='Apps Script ใน Google Sheet ยังเป็นรุ่นเดิม: แก้สภาพ Galley และห้องน้ำบนหน้านี้ได้ แต่ยัง SAVE ส่วนนี้ไม่ได้ ผู้ดูแลต้องวางโค้ด apps-script/Code.gs ใหม่แล้ว Deploy เวอร์ชันใหม่ (ดู README)'}
+    else if(eqServer&&canWrite)$('notice').hidden=true;
     Object.keys(draft).forEach(function(id){if(!draftFields(id).length||draftDone(id))delete draft[id]});persistDraft();
     render();
     $('sync').innerHTML='ข้อมูลจาก Google Sheet · อัปเดตอัตโนมัติทุก 30 วินาที · ล่าสุด <b>'+fmt(new Date().toISOString())+'</b>';
