@@ -1199,7 +1199,12 @@ function exportPdf(){
   Promise.all([loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),document.fonts?document.fonts.ready:null])
   .then(function(){
     var blks=[].slice.call(node.querySelectorAll(':scope > .blk'));
-    return blks.reduce(function(p,b){return p.then(function(arr){return html2canvas(b,{scale:2,backgroundColor:'#ffffff',logging:false}).then(function(cv){arr.push(cv);return arr})})},Promise.resolve([]));
+    /* safe places to start a new page inside a tall block: the top of a table row, heading, legend or cabin row (never through a row) */
+    var SAFE='tr,h2,h3,.legend,.rnote,section,.zone,.row,.ovhrow,.fac,.sblk,.door,.lavgrp,.mg,.cabin>*,.zone>*';
+    var breaks=blks.map(function(b){var t=b.getBoundingClientRect().top,ys={};
+      [].forEach.call(b.querySelectorAll(SAFE),function(e){var y=Math.round(e.getBoundingClientRect().top-t);if(y>0)ys[y]=1});
+      return {h:b.getBoundingClientRect().height,ys:Object.keys(ys).map(Number).sort(function(a,c){return a-c})}});
+    return blks.reduce(function(p,b,i){return p.then(function(arr){return html2canvas(b,{scale:2,backgroundColor:'#ffffff',logging:false}).then(function(cv){cv._br=breaks[i];arr.push(cv);return arr})})},Promise.resolve([]));
   })
   .then(function(cvs){
     var pdf=new window.jspdf.jsPDF({orientation:'p',unit:'mm',format:'a4'});
@@ -1210,11 +1215,13 @@ function exportPdf(){
         if(y+hmm>M+H&&!first){pdf.addPage();y=M}
         pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',M,y,W,hmm);y+=hmm+4;first=false;return;
       }
-      /* taller than a page: slice */
-      var pxPage=Math.floor(H/mmPerPx),off=0;
+      /* taller than a page: slice at the last safe break that still fits the page */
+      var pxPage=Math.floor(H/mmPerPx),off=0,k=cv.height/(cv._br.h||cv.height),safe=cv._br.ys.map(function(v){return Math.round(v*k)});
       if(!first){pdf.addPage();y=M}
       while(off<cv.height){
-        var h=Math.min(pxPage,cv.height-off),s=document.createElement('canvas');s.width=cv.width;s.height=h;
+        var h=Math.min(pxPage,cv.height-off);
+        if(off+h<cv.height){var cut=0;safe.forEach(function(v){if(v>off+pxPage*0.3&&v<=off+h)cut=v});if(cut)h=cut-off}
+        var s=document.createElement('canvas');s.width=cv.width;s.height=h;
         s.getContext('2d').drawImage(cv,0,off,cv.width,h,0,0,cv.width,h);
         if(off>0){pdf.addPage();y=M}
         pdf.addImage(s.toDataURL('image/jpeg',0.92),'JPEG',M,y,W,h*mmPerPx);y+=h*mmPerPx+4;off+=h;
