@@ -451,6 +451,11 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .foot{display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:4px}
 
 @media (max-width:600px){.bar{padding-block:8px;gap:6px 10px}.bar .sync{display:none}.tools .btn{padding:6px 9px;font-size:12px}.who input{width:130px}}
+/* phone: the 9-column zone summary is shown as two 5-column tables (seats, monitors) so nothing scrolls sideways */
+.sumM{display:none}
+.sumM h3{font-size:13px;margin:12px 0 6px;color:var(--muted)}
+.sumM h3:first-child{margin-top:0}
+@media (max-width:700px){#sumFull{display:none}.sumM{display:block}.sumM table{min-width:0}.sumM th,.sumM td{padding-inline:6px}}
 @media print{.bar,.foot,.notice{display:none}}
 .sheetlink{color:var(--accent);font-weight:600;text-decoration:none}
 .sheetlink:hover{text-decoration:underline}
@@ -484,7 +489,11 @@ dialog.wide[open]{display:flex;flex-direction:column}
 
   <section>
     <h2>สรุปตามโซน</h2>
-    <div class="tablebox"><table id="summary"></table></div>
+    <div class="tablebox" id="sumFull"><table id="summary"></table></div>
+    <div class="sumM" aria-hidden="true">
+      <h3>ที่นั่ง</h3><div class="tablebox"><table id="summaryS"></table></div>
+      <h3>Monitor</h3><div class="tablebox"><table id="summaryMon"></table></div>
+    </div>
   </section>
 
   <div class="sumgrid">
@@ -862,7 +871,15 @@ function summaryHTML(){
     h+='<tr><td>'+r.name+'</td><td class="n">'+z.t+'</td><td class="n">'+z.s[0]+'</td><td class="n w'+(z.s[1]?' nz':'')+'">'+z.s[1]+'</td><td class="n b'+(z.s[2]?' nz':'')+'">'+z.s[2]+'</td><td class="n sep">'+z.mt+'</td><td class="n">'+z.m[0]+'</td><td class="n w'+(z.m[1]?' nz':'')+'">'+z.m[1]+'</td><td class="n b'+(z.m[2]?' nz':'')+'">'+z.m[2]+'</td></tr>'});
   return h+'</tbody>';
 }
-function renderSummary(){$('summary').innerHTML=summaryHTML()}
+function renderSummary(){
+  $('summary').innerHTML=summaryHTML();
+  /* phone copy: columns 0-4 (seats) and 0+5-8 (monitors) of the same table */
+  var pick=function(cols){return Array.prototype.map.call($('summary').rows,function(tr){
+    var cells=Array.prototype.filter.call(tr.cells,function(c,i){return cols.indexOf(i)>=0}).map(function(c){var x=c.cloneNode(true);x.classList.remove('sep');return x.outerHTML}).join('');
+    return '<tr>'+cells+'</tr>'})};
+  var mk=function(cols){var r=pick(cols);return '<thead>'+r[0]+'</thead><tbody>'+r.slice(1).join('')+'</tbody>'};
+  $('summaryS').innerHTML=mk([0,1,2,3,4]);$('summaryMon').innerHTML=mk([0,5,6,7,8]);
+}
 /* Galley: one block per galley with a row per equipment type. LAV: one row per seat zone */
 function eqCount(filter){var c={t:0,s:[0,0,0]};Object.keys(ITEMS).forEach(function(id){var it=ITEMS[id];if(!filter(it))return;c.t++;c.s[get(id).s]++});return c}
 function eqHead(first){return '<thead><tr><th>'+first+'</th><th>จำนวน</th><th><i style="background:var(--ok)"></i>ใช้งานได้</th><th><i style="background:var(--warn)"></i>ใช้งานได้บางส่วน</th><th><i style="background:var(--bad)"></i>ใช้งานไม่ได้</th></tr></thead><tbody>'}
