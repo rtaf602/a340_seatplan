@@ -65,7 +65,18 @@ function setupGalleyMap() {
     d.band(at, [{ c: 3, span: 4, stack: [{ g: 'G2AL' }, { lav: 'L35' }] }, { c: 9, span: 6, stack: [{ g: 'G2A' }] }, { c: 17, span: 4, stack: [{ g: 'G2AR' }, { lav: 'L36' }] }]);
     // MISSION COMMANDER: G1A และ LAV L16 ข้างห้อง CC (เพิ่ม 1 แถวก่อนเส้นแบ่งโซน)
     d.insert(rFirst - 1, 1);
-    d.band(rCC - 1, [{ c: 11, span: 6, stack: [{ g: 'G1A' }] }, { c: 19, span: 2, stack: [{ lav: 'L16' }] }], true);
+    // ห้อง CC แคบลงเหลือ B-G (ป้าย Commander Center ขึ้น 2 บรรทัดใน E-F) ให้ G1A อยู่กึ่งกลางตรงกับ G1 (I-N)
+    const label = sh.createTextFinder('Commander Center').matchEntireCell(true).findNext();
+    if (label) {
+      const lr = label.getRow();
+      sh.getRange(lr, 5, 1, 5).breakApart();
+      sh.getRange(lr, 5, 1, 2).merge().setWrap(true).setFontSize(9).setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle');
+      const fr = rCC - 2;   // แถวขอบบนของกรอบห้อง
+      sh.getRange(fr, 8, 1, 3).setBorder(false, null, null, false, null, null);
+      sh.getRange(fr + 5, 8, 1, 3).setBorder(null, null, false, null, null, null);
+      sh.getRange(fr, 7, 6, 1).setBorder(null, null, null, true, null, null, '#556475', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+    }
+    d.band(rCC - 1, [{ c: 9, span: 6, stack: [{ g: 'G1A' }] }, { c: 19, span: 2, stack: [{ lav: 'L16' }] }], true);
     // MISSION COMMANDER: ก่อนห้อง CC : DOOR 1 / G1L · G1 · G1R
     at = d.insert(rMC + 1, 7);
     at = d.door(at, '1');
