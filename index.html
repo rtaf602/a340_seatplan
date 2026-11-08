@@ -1201,9 +1201,18 @@ function exportPdf(){
     var blks=[].slice.call(node.querySelectorAll(':scope > .blk'));
     /* safe places to start a new page inside a tall block: the top of a table row, heading, legend or cabin row (never through a row) */
     var SAFE='tr,h2,h3,.legend,.rnote,section,.zone,.row,.ovhrow,.fac,.sblk,.door,.lavgrp,.mg,.cabin>*,.zone>*';
-    var breaks=blks.map(function(b){var t=b.getBoundingClientRect().top,ys={};
-      [].forEach.call(b.querySelectorAll(SAFE),function(e){var y=Math.round(e.getBoundingClientRect().top-t);if(y>0)ys[y]=1});
-      return {h:b.getBoundingClientRect().height,ys:Object.keys(ys).map(Number).sort(function(a,c){return a-c})}});
+    var breaks=blks.map(function(b){var t=b.getBoundingClientRect().top,ys={},no={},grp=[];
+      var Y=function(e){return Math.round(e.getBoundingClientRect().top-t)};
+      /* a heading stays with its table, the table header stays with its first rows: no break right above those */
+      [].forEach.call(b.querySelectorAll('table'),function(tb){
+        var h=tb.previousElementSibling,top=(h&&/^H[23]$/.test(h.tagName))?Y(h):Y(tb),rs=tb.querySelectorAll('tr');
+        no[Y(tb)]=1;for(var i=0;i<Math.min(3,rs.length);i++)no[Y(rs[i])]=1;
+        if(rs.length>3)no[Y(rs[rs.length-1])]=1;   /* no single last row alone on the next page */
+        var hd=tb.tHead&&tb.tHead.rows.length?tb.tHead:(rs[0]&&rs[0].querySelector('th')?rs[0]:null);
+        grp.push([top,Math.round(tb.getBoundingClientRect().bottom-t),hd?Y(hd):0,hd?Math.round(hd.getBoundingClientRect().bottom-t):0]);
+      });
+      [].forEach.call(b.querySelectorAll(SAFE),function(e){var y=Y(e);if(y>0&&!no[y])ys[y]=1});
+      return {h:b.getBoundingClientRect().height,ys:Object.keys(ys).map(Number).sort(function(a,c){return a-c}),grp:grp}});
     return blks.reduce(function(p,b,i){return p.then(function(arr){return html2canvas(b,{scale:2,backgroundColor:'#ffffff',logging:false}).then(function(cv){cv._br=breaks[i];arr.push(cv);return arr})})},Promise.resolve([]));
   })
   .then(function(cvs){
@@ -1218,13 +1227,20 @@ function exportPdf(){
       /* taller than a page: slice at the last safe break that still fits the page */
       var pxPage=Math.floor(H/mmPerPx),off=0,k=cv.height/(cv._br.h||cv.height),safe=cv._br.ys.map(function(v){return Math.round(v*k)});
       if(!first){pdf.addPage();y=M}
+      var img=function(sy,sh){var c=document.createElement('canvas');c.width=cv.width;c.height=sh;c.getContext('2d').drawImage(cv,0,sy,cv.width,sh,0,0,cv.width,sh);
+        pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',M,y,W,sh*mmPerPx);y+=sh*mmPerPx};
       while(off<cv.height){
-        var h=Math.min(pxPage,cv.height-off);
-        if(off+h<cv.height){var cut=0;safe.forEach(function(v){if(v>off+pxPage*0.3&&v<=off+h)cut=v});if(cut)h=cut-off}
-        var s=document.createElement('canvas');s.width=cv.width;s.height=h;
-        s.getContext('2d').drawImage(cv,0,off,cv.width,h,0,0,cv.width,h);
+        /* continuing a table on a new page: repeat its header row first */
+        var head=null;
+        if(off>0)cv._br.grp.forEach(function(g){var a=Math.round(g[0]*k),z=Math.round(g[1]*k),ht=Math.round(g[2]*k),hb=Math.round(g[3]*k);if(hb>ht&&hb<=off&&off<z)head=[ht,hb-ht]});
+        var room=pxPage-(head?head[1]:0),h=Math.min(room,cv.height-off);
+        if(off+h<cv.height){var cut=0;safe.forEach(function(v){if(v>off+room*0.3&&v<=off+h)cut=v});
+          /* a table (with its heading) that fits on one page is not split: move it whole to the next page */
+          cv._br.grp.forEach(function(g){var a=Math.round(g[0]*k),z=Math.round(g[1]*k);if(cut&&a<cut&&cut<z&&z-a<=pxPage&&a>off)cut=a});
+          if(cut)h=cut-off}
         if(off>0){pdf.addPage();y=M}
-        pdf.addImage(s.toDataURL('image/jpeg',0.92),'JPEG',M,y,W,h*mmPerPx);y+=h*mmPerPx+4;off+=h;
+        if(head)img(head[0],head[1]);
+        img(off,h);y+=4;off+=h;
       }
       first=false;
     });
