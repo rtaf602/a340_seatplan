@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="build" content="20261108124839">
+<meta name="build" content="20261108125409">
 <title>STATUS SEAT PLAN A340</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
@@ -1198,11 +1198,25 @@ function offerFile(name,data,mime){
 }
 var busy=false;
 function exportNote(){return pendingIds().length?' (ข้อมูลก่อน SAVE)':''}
+/* html2canvas (used to make the PDF) cannot draw writing-mode text: before capture, turn each vertical label/cell
+   into a fixed-size box with a rotated span, which it does draw */
+function flattenVertical(root){
+  [].forEach.call(root.querySelectorAll('.gbox.vert .glab, .gbox.vtext .gc'),function(e){
+    var r=e.getBoundingClientRect(),right=!!e.closest('.vr'),cell=e.classList.contains('gc');
+    var sp=document.createElement('span');while(e.firstChild)sp.appendChild(e.firstChild);
+    sp.style.cssText='position:absolute;left:50%;top:50%;white-space:nowrap;transform:translate(-50%,-50%) rotate('+(right?90:-90)+'deg)';
+    e.style.writingMode='horizontal-tb';e.style.transform='none';e.style.position='relative';e.style.padding='0';e.style.overflow='visible';
+    e.style.width=e.style.minWidth=e.style.maxWidth=r.width+'px';e.style.height=e.style.minHeight=r.height+'px';e.style.flex='none';
+    if(cell&&e.classList.contains('eq'))e.style.boxShadow=(right?'inset 6px 0 0 ':'inset 6px 0 0 ')+'var(--st)';   /* status bar on the aisle side, as on screen */
+    e.appendChild(sp);
+  });
+}
 function exportPdf(){
   if(busy)return;busy=true;toast('กำลังสร้าง PDF…'+exportNote());
   useSaved=true;var wrap=el('div','offscreen'),node=reportNode();useSaved=false;wrap.appendChild(node);document.body.appendChild(wrap);
   Promise.all([loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),document.fonts?document.fonts.ready:null])
   .then(function(){
+    flattenVertical(node);
     var blks=[].slice.call(node.querySelectorAll(':scope > .blk'));
     /* safe places to start a new page inside a tall block: the top of a table row, heading, legend or cabin row (never through a row) */
     var SAFE='tr,h2,h3,.legend,.rnote,section,.zone,.row,.ovhrow,.fac,.sblk,.door,.lavgrp,.mg,.cabin>*,.zone>*';
