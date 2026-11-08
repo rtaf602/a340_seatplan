@@ -10,6 +10,7 @@
 | `index.html` | หน้าเว็บ (ผังที่นั่ง Galley ห้องน้ำ, ปุ่ม CLEAR / PREVIEW / SAVE / EXPORT TO PDF ALL PAGES / EXPORT SUMMARY 4 PAGES / EXPORT TO EXCEL) |
 | `export-excel.js` | สร้างไฟล์ EXPORT TO EXCEL 4 แผ่นงาน: ผังที่นั่ง, รวมข้อขัดข้องคงค้าง, ทุกที่นั่ง และ Monitor, ประวัติการแก้ไข |
 | `config.js` | ใส่ URL ของ Apps Script Web App |
+| `apps-script/Setup-Galley-Map.gs` | ใช้ครั้งเดียว: วาด Galley และห้องน้ำลงในแท็บ "ผังที่นั่ง" (ดูวิธีใช้ในหัวไฟล์) |
 | `apps-script/Code.gs` | โค้ดที่วางใน Apps Script ของ Google Sheet: อ่าน/บันทึกข้อมูลให้หน้าเว็บ และเก็บประวัติเมื่อแก้ในชีทโดยตรง |
 
 ## การติดตั้ง (ทำครั้งเดียว)
