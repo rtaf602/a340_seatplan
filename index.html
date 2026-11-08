@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="build" content="20261108124839">
 <title>STATUS SEAT PLAN A340</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
@@ -459,6 +460,9 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .sumM h3{font-size:13px;margin:12px 0 6px;color:var(--muted)}
 .sumM h3:first-child{margin-top:0}
 @media (max-width:700px){#sumFull{display:none}.sumM{display:block}.sumM table{min-width:0}.sumM th,.sumM td{padding-inline:6px}}
+/* new page version available */
+.notice.upd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.notice.upd[hidden]{display:none}
 @media print{.bar,.foot,.notice{display:none}}
 .sheetlink{color:var(--accent);font-weight:600;text-decoration:none}
 .sheetlink:hover{text-decoration:underline}
@@ -489,6 +493,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
     <div class="sync" id="sync">กำลังโหลดข้อมูล…</div>
   </div>
   <div class="notice" id="notice" hidden></div>
+  <div class="notice upd" id="upd" hidden>มีหน้าเว็บเวอร์ชันใหม่ <button class="btn" id="updGo" type="button">โหลดเวอร์ชันใหม่</button></div>
 
   <section>
     <h2>สรุปตามโซน</h2>
@@ -1544,6 +1549,15 @@ function start(){
 function offline(){$('sync').textContent='ยังไม่ได้ตั้งค่า API_URL ใน config.js หน้านี้จึงยังไม่เชื่อมกับ Google Sheet';
   var n=$('notice');n.hidden=false;n.textContent='ผู้ดูแลต้องติดตั้ง Apps Script และใส่ URL ใน config.js ก่อน (ดู README) ตอนนี้แก้ไขได้แต่ SAVE ไม่ได้'}
 start();
+})();
+
+/* the browser may keep an old copy of this page for a while: check for a newer build and offer a reload (drafts are kept in this browser) */
+(function(){
+  var mine=(document.querySelector('meta[name="build"]')||{}).content||'';if(!mine)return;
+  var check=function(){fetch(location.pathname+'?b='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){
+    var m=/<meta name="build" content="([^"]+)"/.exec(t||'');if(m&&m[1]!==mine)document.getElementById('upd').hidden=false}).catch(function(){})};
+  document.getElementById('updGo').addEventListener('click',function(){location.replace(location.pathname+'?v='+Date.now())});
+  setInterval(check,5*60*1000);document.addEventListener('visibilitychange',function(){if(!document.hidden)check()});setTimeout(check,3000);
 })();
 </script>
 </body>
