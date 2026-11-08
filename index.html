@@ -268,6 +268,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .pvtab+.pvtab{border-left:1px solid var(--line)}
 .pvtab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
 .pvtab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (max-width:600px){.pvtabs{flex:1 1 100%;max-width:100%}.pvtab{flex:1 1 0;min-width:0;white-space:normal;line-height:1.25;padding:7px 6px;font-size:11px}}
 .pvpages{display:flex;flex-direction:column;gap:14px;align-items:center;width:max-content;margin-inline:auto}
 .pvpages>.pg{box-shadow:0 1px 6px rgba(0,0,0,.25)}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;max-width:calc(100vw - 32px);transition:opacity .2s,transform .2s;z-index:50}
@@ -1141,7 +1142,11 @@ function renderPreview(){
   $('pvPdf').textContent=pvMode==='all'?'EXPORT TO PDF ALL PAGES':'EXPORT SUMMARY 4 PAGES';
   useSaved=true;
   try{
-    if(pvMode==='all'){host.appendChild(reportNode(true));return}
+    if(pvMode==='all'){
+      /* same as SUMMARY: render the A4-width report at full size, then zoom it down to fit a narrow screen */
+      var rp=reportNode(true);host.appendChild(rp);
+      var w=Math.max(rp.offsetWidth,rp.scrollWidth),sa=Math.min(1,(host.clientWidth-28)/w);if(sa<1)rp.style.zoom=String(sa);
+      host.scrollTop=0;return}
     var box=el('div','pvpages');host.appendChild(box);
     buildPages(box);   /* built at full size so the defect rows are measured correctly, then scaled to fit */
     var sc=Math.min(1,(host.clientWidth-28)/1070);if(sc<1)box.style.zoom=String(sc);
