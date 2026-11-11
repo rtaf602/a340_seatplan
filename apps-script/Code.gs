@@ -7,6 +7,9 @@
  *     และบันทึกประวัติลงแท็บ "ประวัติการแก้ไข" ทุกครั้งที่กด SAVE บนเว็บ
  *  2) บันทึกประวัติอัตโนมัติเมื่อมีคนแก้ไขช่องในชีทโดยตรง (onEdit)
  *
+ * ใครเข้าได้และทำอะไรได้ ตัดสินโดยระบบ Login กลางของ ฝูง.602 (repo eadmin) ทุกคำขอ ดูหัวข้อ "Login กลาง" ด้านล่าง
+ * ไม่มีรหัสเปิดใช้งาน (WRITE_PIN) และรหัส Admin (ADMIN_PIN) แล้ว
+ *
  * แท็บ "Galley และห้องน้ำ" ถูกสร้างเองครั้งแรกที่หน้าเว็บโหลดข้อมูล พร้อมค่าเริ่มต้น
  * (บันทึกประวัติในชื่อ EQ_SEED_BY) ถ้ามีแท็บนี้อยู่แล้วจะไม่เขียนทับ
  *
@@ -18,8 +21,12 @@ const MAP_SHEET = 'ผังที่นั่ง';
 const LOG_SHEET = 'ประวัติการแก้ไข';
 const FIRST_MAP_ROW = 17;      // แถวแรกของผังที่นั่ง
 const INSPECTOR_CELL = 'D3';   // ช่องชื่อผู้ตรวจในชีท
-const WRITE_PIN = '';          // รหัสเข้าหน้าเว็บและ SAVE เช่น '6020' (เว้นว่าง = ไม่ต้องใช้รหัส)
-const ADMIN_PIN = '';          // รหัสสำหรับปุ่ม "ล้างข้อมูลทั้งหมด" บนเว็บ (เว้นว่าง = ปิดปุ่มนี้)
+
+// ---------- Login กลาง ----------
+// LOGIN_URL: ที่อยู่ระบบหลังบ้านของระบบ Login (ค่าเดียวกับ backendUrl ในไฟล์ eadmin/docs/assets/config.js)
+//            กรอกในหน้า Apps Script แล้ว Run setup ครั้งเดียว ระบบจำไว้เอง (ช่องนี้ว่างไว้ได้ในโค้ดบน GitHub)
+// WEB_CODE:  รหัสเว็บนี้ในรายชื่อเว็บของหน้า Admin (ต้องตรงกับ webCode ในไฟล์ config.js)
+const LOGIN = { LOGIN_URL: '', WEB_CODE: 'WEB2', CHECK_SEC: 60 };
 
 const SEAT_TXT = ['ปกติ', 'ขัดข้อง-ใช้ได้', 'ใช้ไม่ได้'];
 const MON_TXT = ['จอปกติ', 'จอเสื่อม', 'จอเสีย'];
@@ -97,37 +104,105 @@ const EQ_ITEMS = [
 ];
 
 // ---------- Web API ----------
+// Every request needs a login (Login กลาง): nothing is read or written without one
 function doGet(e) {
-  const action = (e && e.parameter && e.parameter.action) || 'load';
-  try {
-    if (action === 'load') {
-      if (WRITE_PIN) return json_({ ok: false, error: 'pin' });  // มีรหัส: ต้องโหลดผ่าน POST พร้อมรหัส
-      return json_(loadData_());
-    }
-    return json_({ ok: false, error: 'unknown_action' });
-  } catch (err) {
-    return json_({ ok: false, error: 'server', message: String(err) });
-  }
+  return json_({ ok: true, app: 'a340_seatplan' });
 }
+
+// Editor and Admin only: these write the sheet, or give a file out (EXPORT TO EXCEL reads the whole history)
+const EDIT = { save: 1, reset: 1, history: 1, exported: 1 };
+// these ask the login system afresh, not from the copy kept for LOGIN.CHECK_SEC
+const FRESH = { save: 1, reset: 1, history: 1, exported: 1 };
+const EXPORTS = ['EXPORT TO PDF ALL PAGES', 'EXPORT PDF SUMMARY 4 PAGES', 'EXPORT TO EXCEL'];
 
 function doPost(e) {
   let body;
   try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'bad_request' }); }
   try {
-    if (body.action === 'load') {
-      if (WRITE_PIN && String(body.pin || '') !== WRITE_PIN) return json_({ ok: false, error: 'pin' });
-      return json_(loadData_());
-    }
-    if (body.action === 'history') {
-      if (WRITE_PIN && String(body.pin || '') !== WRITE_PIN) return json_({ ok: false, error: 'pin' });
-      return json_(historyData_());
-    }
-    if (body.action === 'save') return json_(saveData_(body));
-    if (body.action === 'reset') return json_(resetData_(body));
-    return json_({ ok: false, error: 'unknown_action' });
+    const act = String(body.action || '');
+    if (['load', 'history', 'save', 'reset', 'exported'].indexOf(act) < 0) return json_({ ok: false, error: 'unknown_action' });
+    const who = auth_(body.pass, !!FRESH[act]);
+    if (EDIT[act] && !who.edit) return json_({ ok: false, error: 'forbidden', message: 'บัญชีนี้มีสิทธิ์ดูอย่างเดียว (Viewer)' });
+    if (act === 'load') return json_(Object.assign(loadData_(who), { me: { name: who.name, role: who.role } }));
+    if (act === 'history') return json_(historyData_());
+    if (act === 'save') return json_(saveData_(body, who));
+    if (act === 'reset') return json_(resetData_(body, who));
+    if (act === 'exported') return json_(exported_(body, who));
   } catch (err) {
+    if (err && err.code) return json_({ ok: false, error: err.code, message: err.message });
     return json_({ ok: false, error: 'server', message: String(err) });
   }
+}
+
+/** EXPORT TO PDF / EXCEL on the page: one line in the history, with the name of the account */
+function exported_(body, who) {
+  const kind = String(body.kind || '');
+  if (EXPORTS.indexOf(kind) < 0) return { ok: false, error: 'bad_request' };
+  const ss = SpreadsheetApp.getActive();
+  appendLog_(ss, [[new Date(), 'หน้าเว็บ', who.name, 'EXPORT', kind, '', String(body.filename || '').slice(0, 120)]]);
+  return { ok: true };
+}
+
+/* ---------- Login กลาง (ระบบ Login ฝูง.602) ----------
+   The page gets a pass for this web from the login system (App.enterWeb) and sends it with every request; this script
+   sends it on to the login system (op web.check) with the code of this web, and gets back the person and the Role in
+   this web: Admin / Editor write, Viewer looks only, Admin also clears all data. No access, the web closed, the hour
+   over, the password changed, the account taken by another device: refused, every time. The pass is good for that
+   question about this web only. An answer is kept for LOGIN.CHECK_SEC for reading only; every write asks afresh.
+   Only a mark of the pass is kept here, never the pass itself. */
+function err_(code, message) { const e = new Error(message); e.code = code; return e; }
+function sha256_(t) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, t, Utilities.Charset.UTF_8)
+    .map(function (b) { return ('0' + ((b + 256) % 256).toString(16)).slice(-2); }).join('');
+}
+function loginUrl_() { return String(PropertiesService.getScriptProperties().getProperty('LOGIN_URL') || LOGIN.LOGIN_URL || '').trim(); }
+// the address of a deployed Apps Script web app, nothing else: the pass is only ever sent there
+function loginUrlOk_(url) { return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url); }
+function auth_(pass, fresh) {
+  pass = String(pass || '');
+  if (!pass || pass.length > 800) throw err_('auth', 'ให้เข้าสู่ระบบ');
+  let w = '';
+  try { w = String(JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(pass.split('.')[0])).getDataAsString()).w || ''); } catch (x) { w = ''; }
+  if (w && w !== LOGIN.WEB_CODE) throw err_('wrong_web', 'รหัสเว็บในไฟล์ config.js (' + w + ') ไม่ตรงกับ LOGIN.WEB_CODE ใน Apps Script (' + LOGIN.WEB_CODE + ') ให้แก้ให้ตรงกัน');
+  const key = sha256_('a340|' + pass).slice(0, 32), cache = CacheService.getScriptCache();
+  if (!fresh) { const hit = cache.get('who:' + key); if (hit) return JSON.parse(hit); }
+  const url = loginUrl_();
+  if (!loginUrlOk_(url)) throw err_('config', 'ยังไม่ได้ตั้งที่อยู่ระบบ Login (LOGIN.LOGIN_URL แล้ว Run setup)');
+  let j = null;
+  try {
+    const res = UrlFetchApp.fetch(url, { method: 'post', contentType: 'text/plain;charset=utf-8', payload: JSON.stringify({ v: 1, op: 'web.check', pass: pass, web: LOGIN.WEB_CODE }), muteHttpExceptions: true, followRedirects: true });
+    j = JSON.parse(res.getContentText());
+  } catch (x) { j = null; }
+  if (!j || (!j.ok && !j.error)) throw err_('busy', 'ตรวจสิทธิ์กับระบบ Login ไม่ได้ ลองอีกครั้ง');
+  if (!j.ok) {
+    cache.remove('who:' + key);
+    const c = String(j.error.code || '');
+    if (c === 'auth' || c === 'expired' || c === 'taken') throw err_('auth', String(j.error.message || 'ให้เข้าสู่ระบบใหม่'));
+    if (c === 'no_web' || c === 'web_closed') throw err_(c, String(j.error.message || 'บัญชีนี้ไม่มีสิทธิ์ใช้งานเว็บนี้ ให้ติดต่อ Admin'));
+    throw err_('busy', String(j.error.message || 'ระบบ Login ขัดข้อง ลองอีกครั้ง'));
+  }
+  const u = j.user || {}, role = String(j.role || '');
+  // the recorder: column "ชื่อ-สกุล" of the account's row in LOGIN DATABASE (Username as fallback)
+  const who = { key: key, name: String(u.name || u.username || '').trim().slice(0, 60), role: role, edit: role === 'Admin' || role === 'Editor', admin: role === 'Admin' };
+  const left = Math.floor((Number(j.expiresAt) - Date.now()) / 1000);
+  if (left > 1) cache.put('who:' + key, JSON.stringify(who), Math.min(LOGIN.CHECK_SEC, left));
+  return who;
+}
+
+/** รันครั้งเดียวหลังวางโค้ด: จำที่อยู่ระบบ Login และตรวจว่าติดต่อได้ (Google จะขอสิทธิ์เชื่อมต่อบริการภายนอก) */
+function setup() {
+  const p = PropertiesService.getScriptProperties();
+  const url = String(LOGIN.LOGIN_URL || '').trim();
+  if (url) {
+    if (!loginUrlOk_(url)) throw new Error('LOGIN.LOGIN_URL ต้องเป็นที่อยู่ Web app ของระบบ Login (ขึ้นต้น https://script.google.com/macros/s/ ลงท้าย /exec)');
+    p.setProperty('LOGIN_URL', url);
+  }
+  if (!loginUrl_()) throw new Error('ยังไม่ได้กรอก LOGIN.LOGIN_URL (ที่อยู่ระบบหลังบ้านของระบบ Login) กรอกแล้ว Run setup อีกครั้ง');
+  let ok = false;
+  try { ok = JSON.parse(UrlFetchApp.fetch(loginUrl_(), { muteHttpExceptions: true, followRedirects: true }).getContentText()).service === 'eadmin602'; } catch (x) { ok = false; }
+  if (!ok) throw new Error('ติดต่อระบบ Login ที่ ' + loginUrl_() + ' ไม่ได้ ตรวจ LOGIN.LOGIN_URL แล้ว Run setup อีกครั้ง');
+  Logger.log('ระบบ Login ตอบแล้ว · รหัสเว็บนี้ ' + LOGIN.WEB_CODE + ' (ต้องตรงกับรายชื่อเว็บในหน้า Admin)');
+  Logger.log('ตั้งค่าเสร็จแล้ว');
 }
 
 function json_(o) {
@@ -165,7 +240,7 @@ function buildMap_(sh) {
   return { items: items, cell: cell };
 }
 
-function loadData_() {
+function loadData_(who) {
   const ss = SpreadsheetApp.getActive();
   const sh = ss.getSheetByName(MAP_SHEET);
   const m = buildMap_(sh);
@@ -202,7 +277,7 @@ function loadData_() {
     seats[id] = { s: it.s, m: 0, note: it.note, by: lb.by || '', at: lb.at || '' };
   });
   const ls = PropertiesService.getScriptProperties().getProperty('lastSave');
-  return { ok: true, seats: seats, lastSave: ls ? JSON.parse(ls) : null, pinRequired: !!WRITE_PIN, resetEnabled: !!ADMIN_PIN, equip: true };
+  return { ok: true, seats: seats, lastSave: ls ? JSON.parse(ls) : null, pinRequired: false, resetEnabled: !!(who && who.admin), equip: true };
 }
 
 /** ทุกบรรทัดในแท็บประวัติ (สำหรับ EXPORT TO EXCEL) วันเวลาส่งเป็น ISO */
@@ -224,9 +299,8 @@ function historyData_() {
  *   จะไม่บันทึกช่องนั้น แต่ส่งกลับใน conflicts ให้หน้าเว็บถามผู้ใช้
  * - รายการที่ไม่มี fields (หน้าเว็บรุ่นเก่า) จะเขียนทั้ง 3 ช่องแบบเดิม
  */
-function saveData_(body) {
-  if (WRITE_PIN && String(body.pin || '') !== WRITE_PIN) return { ok: false, error: 'pin' };
-  const by = String(body.by || '').trim().slice(0, 60);
+function saveData_(body, who) {
+  const by = who.name;                      // the account confirmed by the login system, never a name the page sends
   if (!by) return { ok: false, error: 'no_name' };
   const changes = Array.isArray(body.changes) ? body.changes.slice(0, 500) : [];
 
@@ -331,10 +405,9 @@ function saveData_(body) {
   }
 }
 
-function resetData_(body) {
-  if (!ADMIN_PIN) return { ok: false, error: 'reset_disabled' };
-  if (String(body.adminPin || '') !== ADMIN_PIN) return { ok: false, error: 'admin_pin' };
-  const by = String(body.by || '').trim().slice(0, 60) || '-';
+function resetData_(body, who) {
+  if (!who.admin) return { ok: false, error: 'forbidden', message: 'ล้างข้อมูลทั้งหมดได้เฉพาะ Admin ของเว็บนี้' };
+  const by = who.name || '-';
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
