@@ -13,7 +13,7 @@
   - **Viewer**: ดูอย่างเดียว ไม่มี SAVE, PREVIEW และส่งออก
   - ไม่มีสิทธิ์: เข้าไม่ได้
 - ชื่อผู้ตรวจ = ชื่อ-สกุลของบัญชีที่ Login (จากชีท LOGIN DATABASE ของระบบ Login) ใช้ในประวัติการแก้ไข SAVE ล่าสุด และไฟล์ที่ส่งออก
-- EXPORT TO PDF ALL PAGES / EXPORT PDF SUMMARY 4 PAGES / EXPORT TO EXCEL บันทึกในแท็บ ประวัติการแก้ไข (ช่องรายการ = `EXPORT`)
+- EXPORT TO PDF ALL PAGES / EXPORT PDF SUMMARY 4 PAGES / EXPORT TO EXCEL บันทึกในแท็บ **ประวัติการส่งออก** (แยกจากประวัติการแก้ไข สร้างเองครั้งแรกที่มีการส่งออก): เวลา, ชื่อ-สกุล, Username, Role, ชนิดไฟล์, ชื่อไฟล์
 - ทุกคำขอ Apps Script ถามระบบ Login (การ SAVE ถามทุกครั้ง การดึงข้อมูลถามซ้ำทุก 1 นาที)
 
 | ไฟล์ | หน้าที่ |

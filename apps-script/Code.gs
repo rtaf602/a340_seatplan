@@ -19,6 +19,8 @@
 // ---------- ตั้งค่า ----------
 const MAP_SHEET = 'ผังที่นั่ง';
 const LOG_SHEET = 'ประวัติการแก้ไข';
+const EXPORT_SHEET = 'ประวัติการส่งออก';   // EXPORT TO PDF / EXCEL จากหน้าเว็บ (สร้างเองครั้งแรกที่มีการส่งออก)
+const EXPORT_HEAD = ['เวลา', 'ชื่อ-สกุล', 'Username', 'Role', 'ชนิดไฟล์', 'ชื่อไฟล์'];
 const FIRST_MAP_ROW = 17;      // แถวแรกของผังที่นั่ง
 const INSPECTOR_CELL = 'D3';   // ช่องชื่อผู้ตรวจในชีท
 
@@ -134,12 +136,28 @@ function doPost(e) {
   }
 }
 
-/** EXPORT TO PDF / EXCEL on the page: one line in the history, with the name of the account */
+/** EXPORT TO PDF / EXCEL on the page: one line in the tab ประวัติการส่งออก, with the account that did it */
 function exported_(body, who) {
   const kind = String(body.kind || '');
   if (EXPORTS.indexOf(kind) < 0) return { ok: false, error: 'bad_request' };
   const ss = SpreadsheetApp.getActive();
-  appendLog_(ss, [[new Date(), 'หน้าเว็บ', who.name, 'EXPORT', kind, '', String(body.filename || '').slice(0, 120)]]);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    let sh = ss.getSheetByName(EXPORT_SHEET);
+    if (!sh) {
+      const log = ss.getSheetByName(LOG_SHEET);
+      sh = ss.insertSheet(EXPORT_SHEET, log ? log.getIndex() : ss.getNumSheets());
+      sh.getRange(1, 1, 1, EXPORT_HEAD.length).setValues([EXPORT_HEAD]).setFontWeight('bold').setBackground('#1f3a5f').setFontColor('#ffffff');
+      sh.setFrozenRows(1);
+      sh.setColumnWidths(1, 1, 150); sh.setColumnWidths(2, 1, 200); sh.setColumnWidths(5, 1, 220); sh.setColumnWidths(6, 1, 380);
+    }
+    const r = sh.getLastRow() + 1;
+    // text cells: a name or a file name is never read as a number or a formula
+    sh.getRange(r, 2, 1, 5).setNumberFormat('@');
+    sh.getRange(r, 1, 1, 6).setValues([[new Date(), who.name, who.username || '', who.role, kind, String(body.filename || '').slice(0, 120)]]);
+    sh.getRange(r, 1).setNumberFormat('dd/MM/yyyy HH:mm:ss');
+  } finally { lock.releaseLock(); }
   return { ok: true };
 }
 
@@ -183,7 +201,7 @@ function auth_(pass, fresh) {
   }
   const u = j.user || {}, role = String(j.role || '');
   // the recorder: column "ชื่อ-สกุล" of the account's row in LOGIN DATABASE (Username as fallback)
-  const who = { key: key, name: String(u.name || u.username || '').trim().slice(0, 60), role: role, edit: role === 'Admin' || role === 'Editor', admin: role === 'Admin' };
+  const who = { key: key, name: String(u.name || u.username || '').trim().slice(0, 60), username: String(u.username || ''), role: role, edit: role === 'Admin' || role === 'Editor', admin: role === 'Admin' };
   const left = Math.floor((Number(j.expiresAt) - Date.now()) / 1000);
   if (left > 1) cache.put('who:' + key, JSON.stringify(who), Math.min(LOGIN.CHECK_SEC, left));
   return who;

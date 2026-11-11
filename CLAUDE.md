@@ -28,7 +28,7 @@ Apps Script `apps-script/Code.gs`
 - `doPost`: **ทุก** action ผ่าน `auth_(body.pass, FRESH[act])` แล้วตรวจ `EDIT` (Admin / Editor) และ `reset` ตรวจ `who.admin`
 - `doGet` ไม่ส่งข้อมูลแล้ว
 - ชื่อผู้ตรวจในประวัติและ `lastSave` = `who.name` จากระบบ Login **ไม่ใช่ `body.by`**
-- `exported`: EXPORT TO PDF ALL PAGES / EXPORT PDF SUMMARY 4 PAGES / EXPORT TO EXCEL ลงแท็บ ประวัติการแก้ไข (รายการ `EXPORT`)
+- `exported`: EXPORT TO PDF ALL PAGES / EXPORT PDF SUMMARY 4 PAGES / EXPORT TO EXCEL ลงแท็บ **ประวัติการส่งออก** (`EXPORT_SHEET` แยกจากประวัติการแก้ไข)
 - `onEdit` (แก้ในชีทโดยตรง) ยังทำงานแบบเดิม ใช้ชื่อในช่อง D3 ของชีท
 
 ## กติกาเมื่อเพิ่มความสามารถใหม่
