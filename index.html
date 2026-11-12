@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="build" content="20261112003000">
+<meta name="build" content="20261112020524">
 <title>STATUS SEAT PLAN A340</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
@@ -40,6 +40,8 @@ button,input,textarea{font:inherit;color:inherit}
 .bar h1 small{display:block;font-size:12px;font-weight:500;color:var(--muted)}
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
 .who label{font-size:12px;color:var(--muted);white-space:nowrap}
+/* the inspector name comes from the login (ชื่อ-สกุล): the field stays for the code (SAVE / reports) but is not shown */
+.who label[for="inspector"],.who #inspector{display:none}
 #role{font-size:12px;color:var(--muted);white-space:nowrap}
 .who input{width:170px;max-width:46vw;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
 .sync{font-size:12px;color:var(--muted);width:100%}
